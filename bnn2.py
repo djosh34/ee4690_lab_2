@@ -233,21 +233,23 @@ def test_numpy(model, testloader):
 if __name__ == '__main__':
 
 
-    # training = True
-    training = False
+    training = True
+    # training = False
     device = "mps"
     # device = "cpu"
 
     batch_size = 2048
     test_batch_size = 20
-    num_epochs = 10
-    learning_rate = 0.0005
-    hidden_size = 128
+    num_epochs = 20
+    learning_rate = 0.0007
+    hidden_size = 81*3*3
 
     # Load MNIST dataset
     # transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
     # transform that everything is if x > 0 then 1 else -1
-    transform = transforms.Compose([transforms.ToTensor(), transforms.Lambda(lambda x: np.where(x > 0, 1, -1).astype(np.float32))])
+    # transform = transforms.Compose([transforms.ToTensor(), transforms.Lambda(lambda x: np.where(x > 0, 1, -1).astype(np.float32))])
+    # transform that everything is if x > 0 then 1 else -1, then only keep the first 729 elements after flattening
+    transform = transforms.Compose([transforms.ToTensor(), transforms.Lambda(lambda x: np.where(x > 0, 1, -1).astype(np.float32)), transforms.Lambda(lambda x: x[:729])])
 
     trainset = torchvision.datasets.MNIST(root='./data', train=True, download=True, transform=transform)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, collate_fn=lambda x: tuple(x_.to(device) for x_ in default_collate(x)))
