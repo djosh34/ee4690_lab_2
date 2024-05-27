@@ -31,7 +31,7 @@ class BNN(nn.Module):
         intermediate_size = hidden_size
 
         # self.fc1 = nn.Conv2d(in_channels=1, kernel_size=kernel_size_1, out_channels=intermediate_size)
-        self.fc1 = nn.Linear(28 * 28, intermediate_size, bias=False)
+        self.fc1 = nn.Linear(768, intermediate_size, bias=False)
         self.clip1 = nn.Hardtanh(-1, 1)
 
 
@@ -48,7 +48,7 @@ class BNN(nn.Module):
 
     def forward(self, x):
         # x = x.view(-1, 1, 28, 28)
-        x = x.view(-1, 1, 28 * 28)
+        # x = x.view(-1, 1, 768)
 
         # print(f'input: {x[0, 0]}')
         x = self.fc1(x)
@@ -81,6 +81,9 @@ def train(model, trainloader):
             optimizer.zero_grad()
 
             inputs = inputs.to(device)
+            inputs = inputs.view(-1, 1, 28 * 28)
+            inputs = inputs[:, :, :768]
+
             labels = labels.to(device)
 
             outputs = model(inputs)
@@ -108,7 +111,10 @@ def test_normal(model, testloader):
     total = 0
     with torch.no_grad():
         for inputs, labels in testloader:
+            inputs = inputs.view(-1, 1, 28 * 28)
+            inputs = inputs[:, :, :768]
             inputs.to(device)
+
             outputs = model(inputs)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
@@ -180,7 +186,7 @@ def linear(input_data, weights):
     return output
 
 def numpy_model_forward(x, weights):
-    x = x.reshape(-1, 28 * 28)
+    x = x.reshape(-1, 768)
     # First convolutional layer
     fc1_weight = weights['fc1.weight']
     # fc1_bias = weights['fc1.bias']
@@ -211,6 +217,10 @@ def test_numpy(model, testloader):
     with torch.no_grad():
         for data, target in testloader:
             np_data = data.cpu().numpy().astype(np.int32)
+            # drop the last elements to make it 768
+            np_data = np_data.reshape(-1, 1, 28 * 28)
+            np_data = np_data[:, :, :768]
+
             np_target = target.cpu().numpy()
 
             # output = model(data)
@@ -228,28 +238,90 @@ def test_numpy(model, testloader):
     accuracy = correct / total
     print(f'Accuracy of the NumPy model: {accuracy * 100:.2f}%')
 
+def save_binarized_weights(weights):
+    fc1_weight = weights['fc1.weight']
+    fc2_weight = weights['fc2.weight']
+
+    # Convert -1 to 0 and 1 to 1
+    fc1_weight = np.where(fc1_weight < 0, 0, 1)
+    fc2_weight = np.where(fc2_weight < 0, 0, 1)
+
+    # Save weights to binary text files
+    with open('fc1_weight_bin.txt', 'w') as f:
+        for row in fc1_weight:
+            f.write(''.join(map(str, row)) + '\n')
+
+    with open('fc2_weight_bin.txt', 'w') as f:
+        for row in fc2_weight:
+            f.write(''.join(map(str, row)) + '\n')
+
+
+def save_test_data(testloader):
+    # Save 20 examples
+    all_data = []
+    all_labels = []
+
+    for data, target in testloader:
+        data = data.cpu().numpy().astype(np.int32).reshape(-1, 1, 28 * 28)[:, :, :768]
+        target = torch.nn.functional.one_hot(target, num_classes=10).cpu().numpy().astype(np.int32)
+
+        all_data.append(data)
+        all_labels.append(target)
+
+    all_data = np.concatenate(all_data, axis=0)
+    all_labels = np.concatenate(all_labels, axis=0)
+
+    all_data = np.where(all_data < 0, 0, 1)
+
+    # Save 1 example
+    with open('1_test_data_bin.txt', 'w') as f:
+        for row in all_data[:1].reshape(-1, 768):
+            f.write(''.join(map(str, row)) + '\n')
+
+    with open('1_test_labels_bin.txt', 'w') as f:
+        for row in all_labels[:1]:
+            f.write(''.join(map(str, row)) + '\n')
+
+    with open('20_test_data_bin.txt', 'w') as f:
+        for row in all_data[:20].reshape(-1, 768):
+            f.write(''.join(map(str, row)) + '\n')
+
+    with open('20_test_labels_bin.txt', 'w') as f:
+        for row in all_labels[:20]:
+            f.write(''.join(map(str, row)) + '\n')
+
+    # Save all examples
+    with open('all_test_data_bin.txt', 'w') as f:
+        for row in all_data.reshape(-1, 768):
+            f.write(''.join(map(str, row)) + '\n')
+
+    with open('all_test_labels_bin.txt', 'w') as f:
+        for row in all_labels:
+            f.write(''.join(map(str, row)) + '\n')
 
 
 if __name__ == '__main__':
 
 
-    training = True
-    # training = False
-    device = "mps"
-    # device = "cpu"
+    # training = True
+    training = False
+    # device = "mps"
+    device = "cpu"
 
     batch_size = 2048
     test_batch_size = 20
     num_epochs = 20
-    learning_rate = 0.0007
-    hidden_size = 81*3*3
+    learning_rate = 0.0005
+    # hidden_size = 81*3*3
+    hidden_size = 256*4
 
     # Load MNIST dataset
     # transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
     # transform that everything is if x > 0 then 1 else -1
     # transform = transforms.Compose([transforms.ToTensor(), transforms.Lambda(lambda x: np.where(x > 0, 1, -1).astype(np.float32))])
     # transform that everything is if x > 0 then 1 else -1, then only keep the first 729 elements after flattening
-    transform = transforms.Compose([transforms.ToTensor(), transforms.Lambda(lambda x: np.where(x > 0, 1, -1).astype(np.float32)), transforms.Lambda(lambda x: x[:729])])
+    # transform = transforms.Compose([transforms.ToTensor(), transforms.Lambda(lambda x: np.where(x > 0, 1, -1).astype(np.float32)), transforms.Lambda(lambda x: x[:729])])
+    transform = transforms.Compose([transforms.ToTensor(), transforms.Lambda(lambda x: np.where(x > 0, 1, -1).astype(np.float32)), transforms.Lambda(lambda x: x[:768])])
 
     trainset = torchvision.datasets.MNIST(root='./data', train=True, download=True, transform=transform)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, collate_fn=lambda x: tuple(x_.to(device) for x_ in default_collate(x)))
@@ -274,6 +346,9 @@ if __name__ == '__main__':
 
     # Testing the BNN
     model.eval()
+
+    # save_test_data(testloader)
+    # save_binarized_weights(extract_weights(model))
 
     test_numpy(model, testloader)
 
