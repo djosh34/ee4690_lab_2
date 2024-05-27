@@ -64,12 +64,12 @@ class BNN(nn.Module):
         return x
 
 
-def train(model, trainloader):
+def train(model, trainloader, weight_decay=0.0000):
     # Initialize the model, loss function, and optimizer
     model.to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
     # Training the BNN
 
@@ -303,17 +303,18 @@ def save_test_data(testloader):
 if __name__ == '__main__':
 
 
-    # training = True
-    training = False
+    training = True
+    # training = False
     # device = "mps"
     device = "cpu"
 
-    batch_size = 2048
+    batch_size = 2000
     test_batch_size = 20
     num_epochs = 20
     learning_rate = 0.0005
+    weight_decay = 0.0000
     # hidden_size = 81*3*3
-    hidden_size = 256*4
+    hidden_size = 96
 
     # Load MNIST dataset
     # transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
@@ -333,7 +334,7 @@ if __name__ == '__main__':
     # Train the BNN
     if training:
         model = BNN(hidden_size=hidden_size)
-        train(model, trainloader)
+        train(model, trainloader, weight_decay=weight_decay)
 
 
         # save the model
