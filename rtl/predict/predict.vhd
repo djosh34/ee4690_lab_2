@@ -46,6 +46,10 @@ entity predict is
 
 
         -- debugging signals
+        temp_sum_popcount : out integer;
+        hidden_i_internal_index : out integer;
+        input_i_internal_index : out integer;
+        state : out state_type := PREDICT_IDLE;
 
         -- end debugging signals
 
@@ -64,9 +68,6 @@ architecture Behavioral of predict is
     type weights_2_type is array(0 to HIDDEN_SIZE - 1) of std_logic_vector(OUTPUT_SIZE - 1 downto 0);
 
     type input_type is array(0 to N_INPUTS - 1) of std_logic_vector(BIT_WIDTH - 1 downto 0);
-
-    type state_type is (PREDICT_IDLE, PREDICT_RUNNING, PREDICT_DONE);
-    signal state : state_type := PREDICT_IDLE;
 
 
     signal weights_1 : weights_1_type;

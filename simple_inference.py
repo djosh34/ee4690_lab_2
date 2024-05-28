@@ -88,12 +88,12 @@ def perform_matrix_multiplication(input, weight_matrix_1, temp_matrix):
 
 
 if __name__ == '__main__':
-    # input_file = './1_test_data_bin.txt'
-    # label_file = './1_test_labels_bin.txt'
+    input_file = './1_test_data_bin.txt'
+    label_file = './1_test_labels_bin.txt'
     # input_file = './20_test_data_bin.txt'
     # label_file = './20_test_labels_bin.txt'
-    input_file = './all_test_data_bin.txt'
-    label_file = './all_test_labels_bin.txt'
+    # input_file = './all_test_data_bin.txt'
+    # label_file = './all_test_labels_bin.txt'
 
     weight_matrix_1_file = './fc1_weight_bin.txt'
     weight_matrix_2_file = './fc2_weight_bin.txt'
@@ -142,8 +142,33 @@ if __name__ == '__main__':
         # temp matrix to 1024 x 768//64 of popcounts
         # use pythons int.bit_count() to get the popcount
         temp_matrix = np.vectorize(lambda x: bin(x).count('1'))(temp_matrix)
+        # output the temp matrix to file like this
+        # first take temp_matrix[0][0 to 11] where each number is one line
+        # 36
+        # 44
+        # ....
+        # then when you're done with a row add an empty line
+
+        # with open(f'./rtl/predict/examples/temp_matrix_unsummed.txt', 'w') as f:
+        #     for i in range(1024):
+        #         for j in range(768 // bit_width):
+        #             f.write(f'{temp_matrix[i][j]}\n')
+        #         f.write('\n')
+
         temp_matrix = temp_matrix.sum(axis=1)
+
+        # with open(f'./rtl/predict/examples/temp_matrix_summed.txt', 'w') as f:
+        #     for i in range(1024):
+        #         f.write(f'{temp_matrix[i]}\n')
+
         temp_matrix = temp_matrix >= 384
+
+        # with open(f'./rtl/predict/examples/temp_matrix_binary.txt', 'w') as f:
+        #     for i in range(1024):
+        #         if temp_matrix[i] == True:
+        #             f.write('1\n')
+        #         else:
+        #             f.write('0\n')
 
         # also perform a real matrix multiplication with each bit being one element
         perform_matrix_multiplication(real_input_data[item_number], real_weight_matrix_1, real_temp_matrix)

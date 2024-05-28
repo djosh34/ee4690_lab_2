@@ -89,6 +89,10 @@ architecture testbench of predict_testbench is
 
 
             -- debugging signals
+            temp_sum_popcount : out integer;
+            hidden_i_internal_index : out integer;
+            input_i_internal_index : out integer;
+            state : out state_type := PREDICT_IDLE;
 
             -- end debugging signals
 
@@ -143,14 +147,14 @@ architecture testbench of predict_testbench is
           set_weights <= '0';
 
           
-          write(line_out, string'("hidden_i: "));
-          write(line_out, int_to_leading_zeros(hidden_i_internal, 4));
-          write(line_out, string'(" i: "));
-          write(line_out, int_to_leading_zeros(i, 3));
-          write(line_out, string'(" "));
-          write(line_out, string'(" Data: "));
-          write(line_out, data_in_var);
-          writeline(output, line_out);
+          -- write(line_out, string'("hidden_i: "));
+          -- write(line_out, int_to_leading_zeros(hidden_i_internal, 4));
+          -- write(line_out, string'(" i: "));
+          -- write(line_out, int_to_leading_zeros(i, 3));
+          -- write(line_out, string'(" "));
+          -- write(line_out, string'(" Data: "));
+          -- write(line_out, data_in_var);
+          -- writeline(output, line_out);
         end loop;
 
 
@@ -159,8 +163,128 @@ architecture testbench of predict_testbench is
       end loop;
     end procedure read_and_populate_weights_1;
 
+    -- populate the weights_2 array
+    procedure read_and_populate_weights_2(
+        file weights_file : text;
+
+        signal hidden_i : out natural;
+
+        signal data_in : out std_logic_vector(BIT_WIDTH - 1 downto 0);
+        signal set_weights : out std_logic
+
+      ) is
+
+      variable weights_line : line;
+      type weights_array_type is array(0 to OUTPUT_SIZE - 1) of std_logic_vector(0 to HIDDEN_SIZE - 1);
+      variable weights_array : weights_array_type;
+
+      variable output_i : integer := 0;
+      variable hidden_i_internal : integer := 0;
+      variable output_register_out : std_logic_vector(0 to OUTPUT_SIZE - 1);
+
+      variable line_out : line;
+
+      variable data_in_var : std_logic_vector(BIT_WIDTH - 1 downto 0);
+    begin
+      write(line_out, string'("Reading weights 2 from file..."));
+      writeline(output, line_out);
+
+      -- weights array: 10 x 1024
+      while not endfile(weights_file) loop
+
+        readline(weights_file, weights_line);
+        read(weights_line, weights_array(output_i));
+
+        -- write(line_out, string'("output_i: "));
+        -- write(line_out, int_to_leading_zeros(output_i, 4));
+        -- write(line_out, string'(" "));
+        -- write(line_out, string'(" Data: "));
+        -- write(line_out, weights_array(output_i));
+        -- writeline(output, line_out);
+
+        output_i := output_i + 1;
+      end loop;
+
+      write(line_out, string'("Done reading weights 2 from file..."));
+      writeline(output, line_out);
+      write(line_out, string'("Populating weights 2..."));
+      writeline(output, line_out);
+
+    -- virtual transpose, so now output for each hidden_i output 10 bits
+      for i in 0 to HIDDEN_SIZE - 1 loop
+        output_register_out := (others => '0');
+
+        for j in 0 to OUTPUT_SIZE - 1 loop
+          output_register_out(j) := weights_array(j)(i);
+        end loop;
+
+        hidden_i <= i;
+        data_in_var := (others => '0');
+        data_in_var(OUTPUT_SIZE - 1 downto 0) := output_register_out;
+        data_in <= data_in_var;
+
+        -- write(line_out, string'("hidden_i: "));
+        -- write(line_out, int_to_leading_zeros(i, 4));
+        -- write(line_out, string'(" "));
+        -- write(line_out, string'(" Data: "));
+        -- write(line_out, data_in_var);
+        -- write(line_out, string'(" Data: "));
+        -- write(line_out, output_register_out);
+        -- writeline(output, line_out);
+
+        set_weights <= '1';
+
+        wait for 20 ns;
+
+        set_weights <= '0';
+
+      end loop;
+    end procedure read_and_populate_weights_2;
 
 
+
+      procedure read_and_populate_input(
+        file testdata : text;
+
+        signal input_or_output_i : out natural;
+        signal data_in : out std_logic_vector(BIT_WIDTH - 1 downto 0);
+        signal set_input : out std_logic
+      ) is
+
+        variable input_line : line;
+        variable input_vector : std_logic_vector(INPUT_SIZE - 1 downto 0);
+
+        variable input_i : integer := 0;
+        variable line_out : line;
+
+        variable data_in_var : std_logic_vector(BIT_WIDTH - 1 downto 0);
+      begin
+
+
+        readline(testdata, input_line);
+        read(input_line, input_vector);
+
+        for i in 0 to INPUT_SIZE / BIT_WIDTH - 1 loop
+
+          input_or_output_i <= i;
+          data_in_var := input_vector(((i + 1) * BIT_WIDTH) - 1 downto i * BIT_WIDTH);
+          data_in <= data_in_var;
+
+          set_input <= '1';
+          wait for 20 ns;
+          set_input <= '0';
+
+          -- write(line_out, string'("i: "));
+          -- write(line_out, int_to_leading_zeros(i, 3));
+          -- write(line_out, string'(" "));
+          -- write(line_out, string'(" Data: "));
+          -- write(line_out, data_in_var);
+          -- writeline(output, line_out);
+        end loop;
+
+        input_i := input_i + 1;
+
+      end procedure read_and_populate_input;
 
 
 
@@ -189,17 +313,69 @@ architecture testbench of predict_testbench is
           wait for 20 ns;
           enable_weights_1 <= '0';
 
-          write(line_out, string'("hidden_i: "));
-          write(line_out, int_to_leading_zeros(hidden_i_internal, 4));
-          write(line_out, string'(" i: "));
-          write(line_out, int_to_leading_zeros(i, 3));
+          -- write(line_out, string'("hidden_i: "));
+          -- write(line_out, int_to_leading_zeros(hidden_i_internal, 4));
+          -- write(line_out, string'(" i: "));
+          -- write(line_out, int_to_leading_zeros(i, 3));
 
+          -- write(line_out, string'(" Data: "));
+          -- write(line_out, data_out);
+          -- writeline(output, line_out);
+        end loop;
+      end loop;
+    end procedure read_and_print_weights_1;
+
+    procedure read_and_print_weights_2(
+        hidden_size : integer;
+
+        signal hidden_i : out natural;
+        signal enable_weights_2 : out std_logic
+
+      ) is
+        variable line_out : line;
+      begin
+        for i in 0 to hidden_size - 1 loop
+
+          hidden_i <= i;
+
+          enable_weights_2 <= '1';
+          wait for 20 ns;
+          enable_weights_2 <= '0';
+
+          write(line_out, string'("hidden_i: "));
+          write(line_out, int_to_leading_zeros(i, 4));
+          write(line_out, string'(" Data: "));
+          write(line_out, data_out(OUTPUT_SIZE - 1 downto 0));
+          writeline(output, line_out);
+        end loop;
+    end procedure read_and_print_weights_2;
+
+    procedure read_and_print_input(
+        n_inputs : integer;
+
+        signal input_or_output_i : out natural;
+        signal enable_input : out std_logic
+
+      ) is
+        variable line_out : line;
+      begin
+        for i in 0 to n_inputs - 1 loop
+
+          input_or_output_i <= i;
+
+          enable_input <= '1';
+          wait for 20 ns;
+          enable_input <= '0';
+
+          write(line_out, string'("i: "));
+          write(line_out, int_to_leading_zeros(i, 3));
           write(line_out, string'(" Data: "));
           write(line_out, data_out);
           writeline(output, line_out);
         end loop;
-      end loop;
-    end procedure read_and_print_weights_1;
+    end procedure read_and_print_input;
+
+
 
 
 
@@ -265,19 +441,32 @@ begin
         writeline(output, line_out);
         read_and_populate_weights_1(weights_1_file, input_or_output_i, hidden_i, data_in, set_weights_1, INPUT_SIZE / BIT_WIDTH);
 
-        write(line_out, string'("Reading weights 1..."));
-        writeline(output, line_out);
-        read_and_print_weights_1(HIDDEN_SIZE, INPUT_SIZE / BIT_WIDTH, input_or_output_i, hidden_i, enable_weights_1);
-
-
-        -- write(line_out, string'("Populating weights 2..."));
+        -- write(line_out, string'("Reading weights 1..."));
         -- writeline(output, line_out);
-        -- read_and_populate_weights(weights_2_file, hidden_i, input_or_output_i, data_in, set_weights_2, HIDDEN_SIZE / BIT_WIDTH);
+        -- read_and_print_weights_1(HIDDEN_SIZE, INPUT_SIZE / BIT_WIDTH, input_or_output_i, hidden_i, enable_weights_1);
+
+
+        write(line_out, string'("Populating weights 2..."));
+        writeline(output, line_out);
+        read_and_populate_weights_2(weights_2_file, hidden_i, data_in, set_weights_2);
 
         -- write(line_out, string'("Reading weights 2..."));
         -- writeline(output, line_out);
-        -- read_and_print_weights(OUTPUT_SIZE, HIDDEN_SIZE / BIT_WIDTH, hidden_i, input_or_output_i, enable_weights_2);
+        -- read_and_print_weights_2(HIDDEN_SIZE, hidden_i, enable_weights_2);
 
+        -- populate input
+        write(line_out, string'("Populating input..."));
+        writeline(output, line_out);
+        read_and_populate_input(testdata, input_or_output_i, data_in, set_input);
+
+        -- write(line_out, string'("Reading input..."));
+        -- writeline(output, line_out);
+        -- read_and_print_input(INPUT_SIZE / BIT_WIDTH, input_or_output_i, enable_input);
+
+
+        -- start the predict component
+        -- if in the state the it is done with one temp variable
+        -- print the variable in integer
 
 
 
