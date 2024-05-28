@@ -67,14 +67,7 @@ architecture Behavioral of predict is
     signal input : input_type;
     
 
-    -- type state_type is (XNOR_IDLE, XNOR_CALCULATING, XNOR_DONE);
-
-    -- signal state : state_type := XNOR_IDLE;
-    -- signal internal_xnor_result : std_logic_vector(N-1 downto 0);
-    -- signal internal_count : unsigned(integer(ceil(log2(real(N))))-1 downto 0);
 begin
-    -- xnor_result <= weights_vector xnor input_vector;
-    -- xnor_result <= internal_xnor_result;
 
 
 
@@ -82,10 +75,6 @@ begin
     begin
         if rising_edge(clk) then
             if rst = '1' then
-                -- internal_xnor_result <= (others => '0');
-                -- internal_count <= (others => '0');
-                -- done <= '0';
-                -- step <= (others => '0');
 
             elsif start = '1' then
             end if;

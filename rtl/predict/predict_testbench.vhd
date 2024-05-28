@@ -30,20 +30,6 @@ architecture testbench of predict_testbench is
     constant HIDDEN_SIZE : integer := 1024;
     constant OUTPUT_SIZE : integer := 10;
 
-    -- address width must be able to address
-    -- all input registers, so INPUT_SIZE/BIT_WIDTH
-    -- or
-    -- all weights_1 registers, so HIDDEN_SIZE * INPUT_SIZE/BIT_WIDTH
-    -- or 
-    -- all weights_2 registers, so OUTPUT_SIZE * HIDDEN_SIZE/BIT_WIDTH
-    -- take the max of these
-    -- address width input = integer(log2(real(INPUT_SIZE/BIT_WIDTH)))
-    -- address width weights_1 = integer(log2(real(HIDDEN_SIZE * INPUT_SIZE/BIT_WIDTH)))
-    -- address width weights_2 = integer(log2(real(OUTPUT_SIZE * HIDDEN_SIZE/BIT_WIDTH)))
-
-
-    -- constant ADDRESS_WIDTH : integer := maximum(integer(log2(real(INPUT_SIZE/BIT_WIDTH))), maximum(integer(log2(real(HIDDEN_SIZE * INPUT_SIZE/BIT_WIDTH))), integer(log2(real(OUTPUT_SIZE * HIDDEN_SIZE/BIT_WIDTH)))));
-  -- function get_address_width(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, BIT_WIDTH: integer) return integer is
     constant ADDRESS_WIDTH : integer := get_address_width(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, BIT_WIDTH);
 
     signal clk : std_logic := '0';
@@ -78,7 +64,7 @@ architecture testbench of predict_testbench is
 
             -- address bus for the weights/inputs (max size of log2(INPUT_SIZE) and log2(HIDDEN_SIZE))
             -- data bus for the weights/inputs 64 bits
-            address : in std_logic_vector(maximum(integer(log2(real(INPUT_SIZE/BIT_WIDTH))), maximum(integer(log2(real(HIDDEN_SIZE * INPUT_SIZE/BIT_WIDTH))), integer(log2(real(OUTPUT_SIZE * HIDDEN_SIZE/BIT_WIDTH))))) - 1 downto 0);
+            address : in std_logic_vector(get_address_width(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, BIT_WIDTH) - 1 downto 0);
             data : in std_logic_vector(BIT_WIDTH - 1 downto 0);
 
             -- set weights 1
@@ -171,6 +157,73 @@ begin
 
 
 
+        -- function get_address_width(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, BIT_WIDTH: integer) return integer;
+        -- function to_nearest_multiple_of_2(x: integer) return integer;
+        -- function index_to_address_weights_1(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, BIT_WIDTH, hidden_i, input_i :integer) return std_logic_vector;
+
+        -- get_address_width test super simple and non covering
+        -- input_size = 768
+        -- hidden_size = 1024
+        -- output_size = 10
+        -- bit_width = 64
+        -- output should be:
+        -- 1024 + 12
+        -- 2**10 + 2**4 = 14 bits
+
+        if get_address_width(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, BIT_WIDTH) /= 14 then
+            were_there_errors <= true;
+            report "get_address_width failed expected 14 got " & to_string(get_address_width(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, BIT_WIDTH));
+        end if;
+
+
+        -- next multiple 2 test
+        -- 12 -> 16, 24 -> 32, 32 -> 32
+        if to_nearest_multiple_of_2(12) /= 16 then
+            were_there_errors <= true;
+            report "to_nearest_multiple_of_2 failed expected 16 got " & to_string(to_nearest_multiple_of_2(12));
+        end if;
+
+        if to_nearest_multiple_of_2(24) /= 32 then
+            were_there_errors <= true;
+            report "to_nearest_multiple_of_2 failed expected 32 got " & to_string(to_nearest_multiple_of_2(24));
+        end if;
+
+        if to_nearest_multiple_of_2(32) /= 32 then
+            were_there_errors <= true;
+            report "to_nearest_multiple_of_2 failed expected 32 got " & to_string(to_nearest_multiple_of_2(32));
+        end if;
+
+        -- address weights 1 test
+        -- addressing hidden_i = 0, input_i = 0 should be 0 x address_width
+
+        if index_to_address_weights_1(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, BIT_WIDTH, 0, 0) /= "00000000000000" then
+            were_there_errors <= true;
+            report "index_to_address_weights_1 failed expected 00000000000000 got " & to_string(index_to_address_weights_1(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, BIT_WIDTH, 0, 0));
+        end if;
+
+        -- addressing hidden_i 763, input_i 11 should be:
+        -- hidden_i into 10 bits = 763 -> 0b1011111011
+        -- 11 into 4 bits = 11 -> 0b1011
+        -- thus address = 0b1011111011  + 0b1011 = 0b10111110111011
+        if index_to_address_weights_1(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, BIT_WIDTH, 763, 11) /= "10111110111011" then
+            were_there_errors <= true;
+            report "index_to_address_weights_1 failed expected 10111110111011 got " & to_string(index_to_address_weights_1(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, BIT_WIDTH, 763, 11));
+        end if;
+
+
+
+        -- addressing hidden_i 63, input_i 1 should be:
+        -- hidden_i into 10 bits = 63 -> 0b0000111111
+        -- 1 into 4 bits = 11 -> 0b0001
+        -- thus address = 0b0000111111  + 0b0001 = 0b00001111110001
+
+        if index_to_address_weights_1(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, BIT_WIDTH, 63, 1) /= "00001111110001" then
+            were_there_errors <= true;
+            report "index_to_address_weights_1 failed expected 00001111110001 got " & to_string(index_to_address_weights_1(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, BIT_WIDTH, 63, 1));
+        end if;
+
+
+
 
         -- read weights_1 file
         -- print each line read
@@ -259,6 +312,9 @@ begin
         --     writeline(output, null_line);
         --     wait for 20 ns;
         -- end loop;
+
+
+        wait for 20 ns;
 
         if were_there_errors then
             report "Test failed";
