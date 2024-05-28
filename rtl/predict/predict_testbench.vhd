@@ -5,6 +5,9 @@ use std.textio.all;
 
 use IEEE.math_real.all;
 
+library work;
+use work.predict_package.all;
+
 entity predict_testbench is
 end predict_testbench;
 
@@ -21,49 +24,124 @@ architecture testbench of predict_testbench is
         return result;
     end function;
 
-    component xnor_popcount
+
+    constant BIT_WIDTH : integer := 64;
+    constant INPUT_SIZE : integer := 768;
+    constant HIDDEN_SIZE : integer := 1024;
+    constant OUTPUT_SIZE : integer := 10;
+
+    -- address width must be able to address
+    -- all input registers, so INPUT_SIZE/BIT_WIDTH
+    -- or
+    -- all weights_1 registers, so HIDDEN_SIZE * INPUT_SIZE/BIT_WIDTH
+    -- or 
+    -- all weights_2 registers, so OUTPUT_SIZE * HIDDEN_SIZE/BIT_WIDTH
+    -- take the max of these
+    -- address width input = integer(log2(real(INPUT_SIZE/BIT_WIDTH)))
+    -- address width weights_1 = integer(log2(real(HIDDEN_SIZE * INPUT_SIZE/BIT_WIDTH)))
+    -- address width weights_2 = integer(log2(real(OUTPUT_SIZE * HIDDEN_SIZE/BIT_WIDTH)))
+
+
+    -- constant ADDRESS_WIDTH : integer := maximum(integer(log2(real(INPUT_SIZE/BIT_WIDTH))), maximum(integer(log2(real(HIDDEN_SIZE * INPUT_SIZE/BIT_WIDTH))), integer(log2(real(OUTPUT_SIZE * HIDDEN_SIZE/BIT_WIDTH)))));
+  -- function get_address_width(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, BIT_WIDTH: integer) return integer is
+    constant ADDRESS_WIDTH : integer := get_address_width(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, BIT_WIDTH);
+
+    signal clk : std_logic := '0';
+    signal rst : std_logic := '0';
+    signal start : std_logic := '0';
+    signal done : std_logic;
+
+    signal address : std_logic_vector(ADDRESS_WIDTH - 1 downto 0);
+    signal data : std_logic_vector(BIT_WIDTH - 1 downto 0);
+
+    signal set_weights_1 : std_logic;
+    signal set_weights_2 : std_logic;
+    signal set_input : std_logic;
+
+    signal enable_input : std_logic;
+    signal enable_weights_1 : std_logic;
+    signal enable_weights_2 : std_logic;
+
+    signal prediction : std_logic_vector(OUTPUT_SIZE - 1 downto 0);
+
+    component predict
         generic (
-            N : integer := 64
+            BIT_WIDTH : integer;
+            INPUT_SIZE : integer;
+            HIDDEN_SIZE : integer;
+            OUTPUT_SIZE : integer
         );
         port (
             clk : in std_logic;
             rst : in std_logic;
             start : in std_logic;
+
+            -- address bus for the weights/inputs (max size of log2(INPUT_SIZE) and log2(HIDDEN_SIZE))
+            -- data bus for the weights/inputs 64 bits
+            address : in std_logic_vector(maximum(integer(log2(real(INPUT_SIZE/BIT_WIDTH))), maximum(integer(log2(real(HIDDEN_SIZE * INPUT_SIZE/BIT_WIDTH))), integer(log2(real(OUTPUT_SIZE * HIDDEN_SIZE/BIT_WIDTH))))) - 1 downto 0);
+            data : in std_logic_vector(BIT_WIDTH - 1 downto 0);
+
+            -- set weights 1
+            -- set weights 2
+            -- set input
+            -- enable (read) input
+            -- enable (read) weights 1
+            -- enable (read) weights 2
+            set_weights_1 : in std_logic;
+            set_weights_2 : in std_logic;
+            set_input : in std_logic;
+
+            enable_input : in std_logic;
+            enable_weights_1 : in std_logic;
+            enable_weights_2 : in std_logic;
+
+
+
+            -- output bus for the prediction
+            prediction : out std_logic_vector(OUTPUT_SIZE - 1 downto 0);
+
+
+            -- debugging signals
+
+            -- end debugging signals
+
+
             done : out std_logic
-
-
         );
     end component;
 
     signal were_there_errors : boolean := false;
     signal cycle_count : integer := 0;
-    signal clk : std_logic := '0';
-
-
-    constant INPUT_DATA_WIDTH : integer := 768;
-    constant REG_DATA_WIDTH : integer := 64;
-    constant N_INPUTS : integer := INPUT_DATA_WIDTH / REG_DATA_WIDTH;
-
-    constant HIDDEN_LAYER_1_SIZE : integer := 1024;
-    constant N_HIDDEN_LAYER_1 : integer := HIDDEN_LAYER_1_SIZE / REG_DATA_WIDTH;
 
 
 begin
-    -- uut: xnor_popcount
-    --     generic map (
-    --         N => N
-    --     )
-    --     port map (
-    --         clk => clk,
-    --         rst => rst,
-    --         start => start,
-    --         done => done,
-    --         weights_vector => weights_vector,
-    --         input_vector => input_vector,
-    --         popcount => popcount,
-    --         xnor_result => xnor_result,
-    --         step => step
-    --     );
+    uut: predict
+        generic map (
+            BIT_WIDTH => BIT_WIDTH,
+            INPUT_SIZE => INPUT_SIZE,
+            HIDDEN_SIZE => HIDDEN_SIZE,
+            OUTPUT_SIZE => OUTPUT_SIZE
+        )
+        port map (
+            clk => clk,
+            rst => rst,
+            start => start,
+
+            address => address,
+            data => data,
+
+            set_weights_1 => set_weights_1,
+            set_weights_2 => set_weights_2,
+            set_input => set_input,
+
+            enable_input => enable_input,
+            enable_weights_1 => enable_weights_1,
+            enable_weights_2 => enable_weights_2,
+
+            prediction => prediction,
+
+            done => done
+        );
 
     -- Clock process
     clk_process : process
@@ -90,6 +168,32 @@ begin
         variable null_line : line;
     begin
         wait for 20 ns;
+
+
+
+
+        -- read weights_1 file
+        -- print each line read
+        -- for each line:
+        --  populate the internal weights_1 array by setting the address and set_weights_1 signal to 1
+        -- wait for 20 ns
+        -- for
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         -- while not endfile(test_file) loop
         --     readline(test_file, line_in);

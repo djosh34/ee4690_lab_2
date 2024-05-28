@@ -4,27 +4,69 @@ use IEEE.NUMERIC_STD.ALL;
 
 use IEEE.math_real.all;
 
+library work;
+use work.predict_package.all;
 
 entity predict is
-    -- generic (
-    -- );
+    generic (
+        BIT_WIDTH : integer := 64;
+        INPUT_SIZE : integer := 768;
+        HIDDEN_SIZE : integer := 1024;
+        OUTPUT_SIZE : integer := 10
+    );
     port (
         clk : in std_logic;
         rst : in std_logic;
         start : in std_logic;
-        done : out std_logic
 
-        -- weights_vector : in std_logic_vector(N-1 downto 0);
-        -- input_vector : in std_logic_vector(N-1 downto 0);
-        -- popcount : out unsigned(integer(ceil(log2(real(N))))-1 downto 0);
-        
-        -- -- Debugging signals
-        -- xnor_result : out std_logic_vector(N-1 downto 0);
-        -- step : out unsigned(integer(ceil(log2(real(N)))) downto 0)
+        address : in std_logic_vector(get_address_width(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, BIT_WIDTH) - 1 downto 0);
+        data : in std_logic_vector(BIT_WIDTH - 1 downto 0);
+
+        -- set weights 1
+        -- set weights 2
+        -- set input
+        -- enable (read) input
+        -- enable (read) weights 1
+        -- enable (read) weights 2
+        set_weights_1 : in std_logic;
+        set_weights_2 : in std_logic;
+        set_input : in std_logic;
+
+        enable_input : in std_logic;
+        enable_weights_1 : in std_logic;
+        enable_weights_2 : in std_logic;
+
+
+
+        -- output bus for the prediction
+        prediction : out std_logic_vector(OUTPUT_SIZE - 1 downto 0);
+
+
+        -- debugging signals
+
+        -- end debugging signals
+
+
+        done : out std_logic
     );
 end predict;
 
 architecture Behavioral of predict is
+    -- - [ ] Matrix weights_1 1024 * 768 bits = 1024 * 12 * 64 bits
+    -- - [ ] Matrix  weights_2 10 * 1024 bits = 10 * 16 * 64 bits
+    constant N_INPUTS : integer := INPUT_SIZE / BIT_WIDTH;
+    constant N_HIDDEN : integer := HIDDEN_SIZE / BIT_WIDTH;
+
+    type weights_1_type is array(0 to HIDDEN_SIZE - 1, 0 to N_INPUTS - 1) of std_logic_vector(BIT_WIDTH - 1 downto 0);
+    type weights_2_type is array(0 to OUTPUT_SIZE - 1, 0 to N_HIDDEN - 1) of std_logic_vector(BIT_WIDTH - 1 downto 0);
+    type input_type is array(0 to N_INPUTS - 1) of std_logic_vector(BIT_WIDTH - 1 downto 0);
+
+
+    signal weights_1 : weights_1_type;
+    signal weights_2 : weights_2_type;
+    signal input : input_type;
+    
+
     -- type state_type is (XNOR_IDLE, XNOR_CALCULATING, XNOR_DONE);
 
     -- signal state : state_type := XNOR_IDLE;
@@ -33,6 +75,8 @@ architecture Behavioral of predict is
 begin
     -- xnor_result <= weights_vector xnor input_vector;
     -- xnor_result <= internal_xnor_result;
+
+
 
     process(clk)
     begin
@@ -44,43 +88,6 @@ begin
                 -- step <= (others => '0');
 
             elsif start = '1' then
-                -- case state is
-                --     when XNOR_IDLE =>
-                --         state <= XNOR_CALCULATING;
-                --         done <= '0';
-                --         step <= (others => '0');
-                --         internal_xnor_result <= weights_vector xnor input_vector;
-                --         internal_count <= (others => '0');
-
-                --     when XNOR_CALCULATING =>
-                --         if step = N then
-                --             state <= XNOR_DONE;
-                --             internal_xnor_result <= weights_vector xnor input_vector;
-                --             done <= '1';
-                --         else
-                --             step <= step + 1;
-                --             if internal_xnor_result(N-1) = '1' then
-                --                 internal_count <= internal_count + 1;
-                --             end if;
-                --             -- just a shift to the right
-                --             internal_xnor_result <= internal_xnor_result(N-2 downto 0) & '0';
-                --         end if;
-
-                --     when XNOR_DONE =>
-                --         state <= XNOR_IDLE;
-                --         done <= '0';
-                --         step <= (others => '0');
-                -- end case;
-                -- internal_xnor_result <= weights_vector xnor input_vector;
-                -- internal_count <= (others => '0');
-                
-                -- for i in 0 to N-1 loop
-                --     if internal_xnor_result(i) = '1' then
-                --         internal_count <= internal_count + 1;
-                --     end if;
-                -- end loop;
-                
-                -- calculation_done <= '1';
             end if;
         end if;
     end process;
