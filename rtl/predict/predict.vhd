@@ -19,7 +19,9 @@ entity predict is
         rst : in std_logic;
         start : in std_logic;
 
-        address : in std_logic_vector(get_address_width(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, BIT_WIDTH) - 1 downto 0);
+
+        input_or_output_i : in natural;
+        hidden_i : in natural;
         data_in : in std_logic_vector(BIT_WIDTH - 1 downto 0);
         data_out : out std_logic_vector(BIT_WIDTH - 1 downto 0);
 
@@ -62,6 +64,9 @@ architecture Behavioral of predict is
     type weights_2_type is array(0 to OUTPUT_SIZE - 1, 0 to N_HIDDEN - 1) of std_logic_vector(BIT_WIDTH - 1 downto 0);
     type input_type is array(0 to N_INPUTS - 1) of std_logic_vector(BIT_WIDTH - 1 downto 0);
 
+    type state_type is (PREDICT_IDLE, PREDICT_RUNNING, PREDICT_DONE);
+    signal state : state_type := PREDICT_IDLE;
+
 
     signal weights_1 : weights_1_type;
     signal weights_2 : weights_2_type;
@@ -76,8 +81,50 @@ begin
     begin
         if rising_edge(clk) then
             if rst = '1' then
+              -- reset the weights
+              for i in 0 to HIDDEN_SIZE - 1 loop
+                for j in 0 to N_INPUTS - 1 loop
+                  weights_1(i, j) <= (others => '0');
+                end loop;
+              end loop;
 
-            elsif start = '1' then
+              for i in 0 to OUTPUT_SIZE - 1 loop
+                for j in 0 to N_HIDDEN - 1 loop
+                  weights_2(i, j) <= (others => '0');
+                end loop;
+              end loop;
+
+              -- reset the input
+              for i in 0 to N_INPUTS - 1 loop
+                input(i) <= (others => '0');
+              end loop;
+            elsif rst = '0' then
+              if state = PREDICT_IDLE and start = '0' then
+
+                if set_weights_1 = '1' then
+                  weights_1(hidden_i, input_or_output_i) <= data_in;
+                end if;
+                if set_weights_2 = '1' then
+                  weights_2(input_or_output_i, hidden_i) <= data_in;
+                end if;
+                if set_input = '1' then
+                  input(input_or_output_i) <= data_in;
+                end if;
+
+                if enable_input = '1' then
+                  data_out <= input(input_or_output_i);
+                end if;
+
+                if enable_weights_1 = '1' then
+                  data_out <= weights_1(hidden_i, input_or_output_i);
+                end if;
+
+                if enable_weights_2 = '1' then
+                  data_out <= weights_2(input_or_output_i, hidden_i);
+                end if;
+              end if;
+
+
             end if;
         end if;
     end process;
