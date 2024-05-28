@@ -20,7 +20,8 @@ entity predict is
         start : in std_logic;
 
         address : in std_logic_vector(get_address_width(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, BIT_WIDTH) - 1 downto 0);
-        data : in std_logic_vector(BIT_WIDTH - 1 downto 0);
+        data_in : in std_logic_vector(BIT_WIDTH - 1 downto 0);
+        data_out : out std_logic_vector(BIT_WIDTH - 1 downto 0);
 
         -- set weights 1
         -- set weights 2
