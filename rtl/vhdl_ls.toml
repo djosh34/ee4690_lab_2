@@ -1,0 +1,9 @@
+standard = "2008"
+
+
+[libraries]
+lib1.files = [
+  "predict/predict.vhd",
+  "predict/predict_package.vhd",
+  "predict/predict_testbench.vhd"
+]

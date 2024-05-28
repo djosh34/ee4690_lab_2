@@ -61,7 +61,8 @@ architecture Behavioral of predict is
     constant N_HIDDEN : integer := HIDDEN_SIZE / BIT_WIDTH;
 
     type weights_1_type is array(0 to HIDDEN_SIZE - 1, 0 to N_INPUTS - 1) of std_logic_vector(BIT_WIDTH - 1 downto 0);
-    type weights_2_type is array(0 to OUTPUT_SIZE - 1, 0 to N_HIDDEN - 1) of std_logic_vector(BIT_WIDTH - 1 downto 0);
+    type weights_2_type is array(0 to HIDDEN_SIZE - 1) of std_logic_vector(OUTPUT_SIZE - 1 downto 0);
+
     type input_type is array(0 to N_INPUTS - 1) of std_logic_vector(BIT_WIDTH - 1 downto 0);
 
     type state_type is (PREDICT_IDLE, PREDICT_RUNNING, PREDICT_DONE);
@@ -88,10 +89,8 @@ begin
                 end loop;
               end loop;
 
-              for i in 0 to OUTPUT_SIZE - 1 loop
-                for j in 0 to N_HIDDEN - 1 loop
-                  weights_2(i, j) <= (others => '0');
-                end loop;
+              for i in 0 to N_HIDDEN - 1 loop
+                weights_2(i) <= (others => '0');
               end loop;
 
               -- reset the input
@@ -105,7 +104,7 @@ begin
                   weights_1(hidden_i, input_or_output_i) <= data_in;
                 end if;
                 if set_weights_2 = '1' then
-                  weights_2(input_or_output_i, hidden_i) <= data_in;
+                  weights_2(hidden_i) <= data_in(OUTPUT_SIZE - 1 downto 0);
                 end if;
                 if set_input = '1' then
                   input(input_or_output_i) <= data_in;
@@ -120,7 +119,8 @@ begin
                 end if;
 
                 if enable_weights_2 = '1' then
-                  data_out <= weights_2(input_or_output_i, hidden_i);
+                  data_out <= (others => '0');
+                  data_out(OUTPUT_SIZE - 1 downto 0) <= weights_2(hidden_i);
                 end if;
               end if;
 
