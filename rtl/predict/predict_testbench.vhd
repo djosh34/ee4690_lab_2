@@ -51,6 +51,12 @@ architecture testbench of predict_testbench is
 
     signal prediction : std_logic_vector(OUTPUT_SIZE - 1 downto 0);
 
+    signal temp_sum_popcount : natural;
+    signal hidden_i_internal_index : natural;
+    signal input_i_internal_index : natural;
+    signal state : state_type := PREDICT_IDLE;
+
+
     component predict
         generic (
             BIT_WIDTH : integer;
@@ -89,9 +95,9 @@ architecture testbench of predict_testbench is
 
 
             -- debugging signals
-            temp_sum_popcount : out integer;
-            hidden_i_internal_index : out integer;
-            input_i_internal_index : out integer;
+            temp_sum_popcount : out natural;
+            hidden_i_internal_index : out natural;
+            input_i_internal_index : out natural;
             state : out state_type := PREDICT_IDLE;
 
             -- end debugging signals
@@ -409,6 +415,11 @@ begin
 
             prediction => prediction,
 
+            temp_sum_popcount => temp_sum_popcount,
+            hidden_i_internal_index => hidden_i_internal_index,
+            input_i_internal_index => input_i_internal_index,
+            state => state,
+
             done => done
         );
 
@@ -432,6 +443,8 @@ begin
         variable line_in : line;
         variable line_out : line;
         variable null_line : line;
+
+        variable i_loop_stopper : integer := 0;
     begin
         wait for 20 ns;
 
@@ -463,10 +476,46 @@ begin
         -- writeline(output, line_out);
         -- read_and_print_input(INPUT_SIZE / BIT_WIDTH, input_or_output_i, enable_input);
 
+        start <= '1';
+        wait for 20 ns;
 
-        -- start the predict component
-        -- if in the state the it is done with one temp variable
-        -- print the variable in integer
+
+        while done /= '1' loop
+            -- print all debug signals without state
+            write(line_out, string'("tmp: "));
+            write(line_out, int_to_leading_zeros(temp_sum_popcount, 4));
+            write(line_out, string'(" "));
+            write(line_out, string'("h_i: "));
+            write(line_out, int_to_leading_zeros(hidden_i_internal_index, 4));
+            write(line_out, string'(" "));
+            write(line_out, string'("i_i: "));
+            write(line_out, int_to_leading_zeros(input_i_internal_index, 4));
+            write(line_out, string'(" "));
+            write(line_out, string'("state: "));
+            write(line_out, state_to_string(state));
+            write(line_out, string'(" "));
+
+            writeline(output, line_out);
+
+            wait for 20 ns;
+
+
+
+
+            i_loop_stopper := i_loop_stopper + 1;
+
+            if i_loop_stopper > 100 then
+                report "Test failed";
+                wait;
+            end if;
+        end loop;
+
+        write(line_out, string'("Prediction: "));
+        write(line_out, prediction);
+        writeline(output, line_out);
+
+        write(line_out, string'("Test is finished..."));
+        writeline(output, line_out);
 
 
 

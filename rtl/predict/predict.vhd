@@ -46,9 +46,9 @@ entity predict is
 
 
         -- debugging signals
-        temp_sum_popcount : out integer;
-        hidden_i_internal_index : out integer;
-        input_i_internal_index : out integer;
+        temp_sum_popcount : out natural;
+        hidden_i_internal_index : out natural;
+        input_i_internal_index : out natural;
         state : out state_type := PREDICT_IDLE;
 
         -- end debugging signals
@@ -98,35 +98,70 @@ begin
               for i in 0 to N_INPUTS - 1 loop
                 input(i) <= (others => '0');
               end loop;
+
+              done <= '0';
+              data_out <= (others => '0');
+              prediction <= (others => '0');
+
+              temp_sum_popcount <= 0;
+              hidden_i_internal_index <= 0;
+              input_i_internal_index <= 0;
+              state <= PREDICT_IDLE;
+
             elsif rst = '0' then
-              if state = PREDICT_IDLE and start = '0' then
 
-                if set_weights_1 = '1' then
-                  weights_1(hidden_i, input_or_output_i) <= data_in;
-                end if;
-                if set_weights_2 = '1' then
-                  weights_2(hidden_i) <= data_in(OUTPUT_SIZE - 1 downto 0);
-                end if;
-                if set_input = '1' then
-                  input(input_or_output_i) <= data_in;
-                end if;
 
-                if enable_input = '1' then
-                  data_out <= input(input_or_output_i);
-                end if;
+              case state is
+                when PREDICT_IDLE =>
+                  if start = '0' then
+                    if set_weights_1 = '1' then
+                      weights_1(hidden_i, input_or_output_i) <= data_in;
+                    end if;
 
-                if enable_weights_1 = '1' then
-                  data_out <= weights_1(hidden_i, input_or_output_i);
-                end if;
+                    if set_weights_2 = '1' then
+                      weights_2(hidden_i) <= data_in(OUTPUT_SIZE - 1 downto 0);
+                    end if;
 
-                if enable_weights_2 = '1' then
-                  data_out <= (others => '0');
-                  data_out(OUTPUT_SIZE - 1 downto 0) <= weights_2(hidden_i);
-                end if;
-              end if;
+                    if set_input = '1' then
+                      input(input_or_output_i) <= data_in;
+                    end if;
 
+                    if enable_input = '1' then
+                      data_out <= input(input_or_output_i);
+                    end if;
+
+                    if enable_weights_1 = '1' then
+                      data_out <= weights_1(hidden_i, input_or_output_i);
+                    end if;
+
+                    if enable_weights_2 = '1' then
+                      data_out <= (others => '0');
+                      data_out(OUTPUT_SIZE - 1 downto 0) <= weights_2(hidden_i);
+                    end if;
+
+                  elsif start = '1' then
+                    state <= PREDICT_RUNNING;
+                  end if;
+                when PREDICT_RUNNING =>
+                  state <= PREDICT_DONE;
+                  -- state <= PREDICT_INPUT;
+                -- when PREDICT_INPUT =>
+                  -- state <= PREDICT_HIDDEN;
+                -- when PREDICT_HIDDEN =>
+                  -- state <= PREDICT_OUTPUT;
+                -- when PREDICT_OUTPUT =>
+                  -- state <= PREDICT_DONE;
+                when PREDICT_DONE =>
+                  state <= PREDICT_IDLE;
+                  done <= '1';
+                when others =>
+                  state <= PREDICT_IDLE;
+              end case;
 
             end if;
+
+
+
         end if;
     end process;
 
