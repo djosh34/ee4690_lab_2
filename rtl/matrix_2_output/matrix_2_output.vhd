@@ -3,6 +3,8 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 use IEEE.STD_LOGIC_misc.ALL;
 
+use std.textio.all;
+
 use IEEE.math_real.all;
 use work.predict_package.all;
 
@@ -20,6 +22,7 @@ entity matrix_2_output is
     port (
         clk : in std_logic;
         rst : in std_logic;
+        enable : in std_logic;
 
         current_weights_row : in std_logic_vector(0 to OUTPUT_DIM - 1);
         current_input_bit : in std_logic;
@@ -68,6 +71,8 @@ begin
     variable will_highest_increment_bit : unsigned(0 to 0) := (others => '0');
 
     variable hidden_dim_counter : natural := 0;
+
+    variable line_out : line;
   begin
     if rst = '1' then
 
@@ -80,7 +85,32 @@ begin
 
       hidden_dim_counter := 0;
 
-    elsif rising_edge(clk) then
+    elsif rising_edge(clk) and enable = '1' then
+
+      -- print all counters including their index and the highest count in normal integer form
+
+      -- write(line_out, string'("highest_counter: "));
+      -- write(line_out, to_integer(unsigned(highest_counter)));
+      -- write(line_out, string'(" "));
+      -- write(line_out, string'("output_accumulators: "));
+      -- for i in 0 to OUTPUT_DIM - 1 loop
+      --   write(line_out, string'(" "));
+      --   write(line_out, i);
+      --   write(line_out, string'(": "));
+      --   write(line_out, to_integer(output_accumulator(i)));
+      --   write(line_out, string'(" "));
+      -- end loop;
+
+      -- -- print also the current_weights_row and current_input_bit
+      -- write(line_out, string'("    current_weights_row: "));
+      -- write(line_out, current_weights_row);
+      -- write(line_out, string'(" current_input_bit: "));
+      -- write(line_out, current_input_bit);
+      -- -- and their xnor
+      -- write(line_out, string'(" xnor: "));
+      -- write(line_out, current_weights_row xnor current_input_bit);
+
+      -- writeline(output, line_out);
 
       for i in 0 to OUTPUT_DIM - 1 loop
         should_increment_logic := current_weights_row(i) xnor current_input_bit;
