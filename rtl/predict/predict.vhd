@@ -61,13 +61,7 @@ end predict;
 architecture Behavioral of predict is
     -- - [ ] Matrix weights_1 1024 * 768 bits = 1024 * 12 * 64 bits
     -- - [ ] Matrix  weights_2 10 * 1024 bits = 10 * 16 * 64 bits
-    constant N_INPUTS : integer := INPUT_SIZE / BIT_WIDTH;
-    constant N_HIDDEN : integer := HIDDEN_SIZE / BIT_WIDTH;
 
-    type weights_1_type is array(0 to HIDDEN_SIZE - 1, 0 to N_INPUTS - 1) of std_logic_vector(BIT_WIDTH - 1 downto 0);
-    type weights_2_type is array(0 to HIDDEN_SIZE - 1) of std_logic_vector(OUTPUT_SIZE - 1 downto 0);
-
-    type input_type is array(0 to N_INPUTS - 1) of std_logic_vector(BIT_WIDTH - 1 downto 0);
 
 
     signal weights_1 : weights_1_type;

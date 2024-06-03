@@ -16,8 +16,8 @@ entity xnor_popcount is
         enable : in std_logic;
         is_valid : out std_logic;
 
-        input_input : in std_logic_vector(N-1 downto 0);
-        input_weights : in std_logic_vector(N-1 downto 0);
+        input_input : in std_logic_vector(0 to N-1);
+        input_weights : in std_logic_vector(0 to N-1);
 
         is_sum_high : out std_logic;
         

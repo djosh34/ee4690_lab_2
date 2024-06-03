@@ -20,6 +20,15 @@ package predict_package is
 
 
 
+    constant INPUT_SIZE : integer := 784;
+    constant HIDDEN_SIZE : integer := 1024;
+    constant OUTPUT_SIZE : integer := 10;
+
+    type weights_1_type is array(0 to HIDDEN_SIZE - 1) of std_logic_vector(0 to INPUT_SIZE - 1);
+    type weights_2_type is array(0 to HIDDEN_SIZE - 1) of std_logic_vector(0 to OUTPUT_SIZE - 1);
+
+
+
 end predict_package;
 
 package body predict_package is
