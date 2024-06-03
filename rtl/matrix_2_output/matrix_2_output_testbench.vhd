@@ -193,13 +193,18 @@ begin
             if done /= '1' then
                 were_there_errors := true;
                 this_test_ok := false;
-                write(std_out, string'("Test failed: done signal not high"));
+                write(std_out, string'("Test failed: done signal not high  "));
             end if;
 
             if prediction /= output_vector_row then
                 were_there_errors := true;
                 this_test_ok := false;
-                write(std_out, string'("Test failed: prediction does not match output"));
+                write(std_out, string'("Test failed: expected output: "));
+                write(std_out, output_vector_row);
+                write(std_out, string'(" "));
+                write(std_out, string'("actual output: "));
+                write(std_out, prediction);
+
             end if;
 
 
@@ -212,10 +217,18 @@ begin
             max_test_counter := max_test_counter + 1;
             test_i := test_i + 1;
 
-            if max_test_counter > 10 then
-                were_there_errors := true;
-                report "Test failed: too many tests" severity failure;
-            end if;
+            -- if max_test_counter > 10 then
+            --     were_there_errors := true;
+            --     report "Test failed: too many tests" severity failure;
+            -- end if;
+
+
+
+            rst <= '1';
+
+            wait for clk_period;
+
+            rst <= '0';
         end loop;
 
 
@@ -223,8 +236,10 @@ begin
 
         if were_there_errors then
             report "Test failed";
+            finish;
         else
             report "Test passed";
+            finish;
         end if;
 
         wait;
