@@ -10,6 +10,11 @@ package predict_package is
     function std_logic_to_boolean_char(x : std_logic) return string;
 
 
+    type logic_array is array (natural range <>) of std_logic;
+    type unsigned_array is array (natural range <>) of unsigned(0 downto 0);
+    function array_to_unsigned(input: logic_array) return unsigned_array;
+
+
     type state_type is (PREDICT_IDLE, PREDICT_RUNNING, PREDICT_DONE);
     function state_to_string(state : state_type) return string;
 
@@ -49,6 +54,16 @@ package body predict_package is
         return "FALSE";
       end if;
     end std_logic_to_boolean_char;
+
+
+    function array_to_unsigned(input: logic_array) return unsigned_array is
+      variable output: unsigned_array(0 to input'length - 1);
+    begin
+      for i in 0 to input'length - 1 loop
+        output(i) := "" & input(i);
+      end loop;
+      return output;
+    end array_to_unsigned;
 
     function state_to_string(state : state_type) return string is
     begin

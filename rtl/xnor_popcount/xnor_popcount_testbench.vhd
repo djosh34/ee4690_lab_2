@@ -121,6 +121,8 @@ begin
         variable std_out : line;
 
         variable were_there_errors : boolean := false;
+
+        variable max_test_counter : integer := 0;
     begin
         wait for clk_period;
         rst <= '1';
@@ -171,6 +173,27 @@ begin
             write(std_out, string'(std_logic_to_boolean_char(expected_is_high)));
             write(std_out, string'(" - "));
             write(std_out, string'(std_logic_to_boolean_char(is_sum_high)));
+
+            if expected_sum_vector_row /= to_integer(popcount_sum) then
+              were_there_errors := true;
+              write(std_out, string'("    ERROR SUM!!!"));
+            else  
+              write(std_out, string'("                "));
+            end if;
+
+            if expected_is_high /= is_sum_high then
+              were_there_errors := true;
+              write(std_out, string'("    ERROR IS_HIGH_COMPARISON!!!"));
+            end if;
+
+
+
+            max_test_counter := max_test_counter + 1;
+
+            if max_test_counter = 100 then
+              exit;
+            end if;
+
             writeline(output, std_out);
           end if;
 
@@ -181,85 +204,10 @@ begin
 
 
 
+        writeline(output, std_out);
+        writeline(output, std_out);
+        writeline(output, std_out);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        -- while not endfile(test_file) loop
-        --     readline(test_file, line_in);
-        --     read(line_in, vec_a);
-
-        --     readline(test_file, line_in);
-        --     read(line_in, vec_b);
-
-        --     readline(test_file, line_in);
-        --     read(line_in, expected_xnor);
-
-        --     readline(test_file, line_in);
-        --     read(line_in, expected_popcount);
-
-        --     readline(test_file, null_line);
-
-        --     write(line_out, string'("A            : "));
-        --     write(line_out, vec_a);
-        --     writeline(output, line_out);
-        --     write(line_out, string'("B            : "));
-        --     write(line_out, vec_b);
-        --     writeline(output, line_out);
-        --     write(line_out, string'("Expected XNOR: "));
-        --     write(line_out, expected_xnor);
-        --     writeline(output, line_out);
-        --     write(line_out, string'("Expected POPC: "));
-        --     write(line_out, expected_popcount);
-        --     writeline(output, line_out);
-
-        --     weights_vector <= vec_a;
-        --     input_vector <= vec_b;
-
-        --     -- Apply reset
-        --     rst <= '1';
-        --     wait for 20 ns;
-        --     rst <= '0';
-
-        --     start <= '1';
-        --     wait for 20 ns;
-        --     start <= '0';
-
-        --     while not done loop
-        --     -- for i in 0 to 100 loop
-        --         -- write(line_out, string'("Popcount: "));
-        --         -- write(line_out, to_string(popcount));
-        --         -- writeline(output, line_out);
-        --         -- write(line_out, string'("XNOR    : "));
-        --         -- write(line_out, xnor_result);
-
-        --         -- writeline(output, line_out);
-        --         wait for 20 ns;
-        --     end loop;
-
-
-        --     assert xnor_result = expected_xnor
-        --         report "XNOR result mismatch expected " & to_string(expected_xnor) & " got " & to_string(xnor_result)
-        --         severity error;
-
-        --     assert to_integer(popcount) = expected_popcount
-        --         report "Popcount mismatch expected " & integer'image(expected_popcount) & " got " & integer'image(to_integer(popcount))
-        --         severity error;
-
-        --     writeline(output, null_line);
-        --     wait for 20 ns;
-        -- end loop;
 
         if were_there_errors then
             report "Test failed";
