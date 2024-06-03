@@ -4,55 +4,26 @@ use IEEE.NUMERIC_STD.ALL;
 
 use IEEE.math_real.all;
 
+use std.textio.all;
+
 library work;
 use work.predict_package.all;
 
 entity predict is
     generic (
-        BIT_WIDTH : integer := 64;
         INPUT_SIZE : integer := 768;
         HIDDEN_SIZE : integer := 1024;
-        OUTPUT_SIZE : integer := 10
+        OUTPUT_SIZE : integer := 10;
+        weights_1_filename : string;
+        weights_2_filename : string
     );
     port (
         clk : in std_logic;
         rst : in std_logic;
-        start : in std_logic;
 
-
-        input_or_output_i : in natural;
-        hidden_i : in natural;
-        data_in : in std_logic_vector(BIT_WIDTH - 1 downto 0);
-        data_out : out std_logic_vector(BIT_WIDTH - 1 downto 0);
-
-        -- set weights 1
-        -- set weights 2
-        -- set input
-        -- enable (read) input
-        -- enable (read) weights 1
-        -- enable (read) weights 2
-        set_weights_1 : in std_logic;
-        set_weights_2 : in std_logic;
-        set_input : in std_logic;
-
-        enable_input : in std_logic;
-        enable_weights_1 : in std_logic;
-        enable_weights_2 : in std_logic;
-
-
-
-        -- output bus for the prediction
-        prediction : out std_logic_vector(OUTPUT_SIZE - 1 downto 0);
-
-
-        -- debugging signals
-        temp_sum_popcount : out integer;
-        hidden_i_internal_index : out integer;
-        input_i_internal_index : out integer;
-        state : out state_type := PREDICT_IDLE;
-
-        -- end debugging signals
-
+        input_row : in std_logic_vector(0 to INPUT_SIZE - 1);
+        output_row : out std_logic_vector(0 to OUTPUT_SIZE - 1);
+      
 
         done : out std_logic
     );
@@ -61,72 +32,125 @@ end predict;
 architecture Behavioral of predict is
     -- - [ ] Matrix weights_1 1024 * 768 bits = 1024 * 12 * 64 bits
     -- - [ ] Matrix  weights_2 10 * 1024 bits = 10 * 16 * 64 bits
-    constant N_INPUTS : integer := INPUT_SIZE / BIT_WIDTH;
-    constant N_HIDDEN : integer := HIDDEN_SIZE / BIT_WIDTH;
-
-    type weights_1_type is array(0 to HIDDEN_SIZE - 1, 0 to N_INPUTS - 1) of std_logic_vector(BIT_WIDTH - 1 downto 0);
-    type weights_2_type is array(0 to HIDDEN_SIZE - 1) of std_logic_vector(OUTPUT_SIZE - 1 downto 0);
-
-    type input_type is array(0 to N_INPUTS - 1) of std_logic_vector(BIT_WIDTH - 1 downto 0);
 
 
-    signal weights_1 : weights_1_type;
-    signal weights_2 : weights_2_type;
-    signal input : input_type;
+    file weights_1_file : text open read_mode is weights_1_filename;
+    file weights_2_file : text open read_mode is weights_2_filename;
+
+
+    constant weights_1 : weights_1_type := read_and_populate_weights_1(weights_1_file);
+    constant weights_2 : weights_2_type := read_and_populate_weights_2(weights_2_file);
+
+    signal is_valid : std_logic;
+    signal is_sum_high : std_logic;
+    signal popcount_sum : unsigned(9 downto 0);
+
+    signal current_2_input_bit : std_logic;
+    signal matrix_2_output_enable : std_logic;
+
+    signal current_weights_1_row : std_logic_vector(0 to INPUT_SIZE - 1);
+    signal current_weights_2_row : std_logic_vector(0 to OUTPUT_SIZE - 1);
+
     
 
 begin
 
+    unit_xnor_popcount : entity work.xnor_popcount
+        generic map (
+            N => INPUT_SIZE
+        )
+        port map (
+            clk => clk,
+            rst => rst,
+            enable => '1',
+            is_valid => is_valid,
+
+            input_input => input_row,
+            input_weights => current_weights_1_row,
+
+            is_sum_high => is_sum_high,
+            popcount_sum => popcount_sum
+        );
+
+
+    unit_matrix_2_output : entity work.matrix_2_output
+        generic map (
+            HIDDEN_DIM => HIDDEN_SIZE,
+            OUTPUT_DIM => OUTPUT_SIZE
+        )
+        port map (
+            clk => clk,
+            rst => rst,
+            enable => is_valid,
+
+            current_weights_row => current_weights_2_row,
+            current_input_bit => is_sum_high,
+
+            prediction => output_row,
+            done => done
+        );
+
 
 
     process(clk)
+      variable matrix_1_i : integer := 0;
+      variable matrix_2_i : integer := 0;
+
+      variable line_out : line;
     begin
         if rising_edge(clk) then
             if rst = '1' then
-              -- reset the weights
-              for i in 0 to HIDDEN_SIZE - 1 loop
-                for j in 0 to N_INPUTS - 1 loop
-                  weights_1(i, j) <= (others => '0');
-                end loop;
-              end loop;
 
-              for i in 0 to N_HIDDEN - 1 loop
-                weights_2(i) <= (others => '0');
-              end loop;
+              matrix_1_i := 0;
+              matrix_2_i := 0;
 
-              -- reset the input
-              for i in 0 to N_INPUTS - 1 loop
-                input(i) <= (others => '0');
-              end loop;
+              current_weights_1_row <= weights_1(0);
+              current_weights_2_row <= weights_2(0);
+
+
+
             elsif rst = '0' then
-              if state = PREDICT_IDLE and start = '0' then
 
-                if set_weights_1 = '1' then
-                  weights_1(hidden_i, input_or_output_i) <= data_in;
-                end if;
-                if set_weights_2 = '1' then
-                  weights_2(hidden_i) <= data_in(OUTPUT_SIZE - 1 downto 0);
-                end if;
-                if set_input = '1' then
-                  input(input_or_output_i) <= data_in;
-                end if;
+              -- write(line_out, string'("Matrix 1 i: "));
+              -- write(line_out, int_to_leading_zeros(matrix_1_i, 4));
 
-                if enable_input = '1' then
-                  data_out <= input(input_or_output_i);
-                end if;
+              -- write(line_out, string'(" Matrix 2 i: "));
+              -- write(line_out, int_to_leading_zeros(matrix_2_i, 4));
 
-                if enable_weights_1 = '1' then
-                  data_out <= weights_1(hidden_i, input_or_output_i);
-                end if;
+              -- write(line_out, string'(" is_valid: "));
+              -- write(line_out, is_valid);
 
-                if enable_weights_2 = '1' then
-                  data_out <= (others => '0');
-                  data_out(OUTPUT_SIZE - 1 downto 0) <= weights_2(hidden_i);
-                end if;
+              -- write(line_out, string'(" is_sum_high: "));
+              -- write(line_out, is_sum_high);
+
+              -- write(line_out, string'(" current_2_input_bit: "));
+              -- write(line_out, current_2_input_bit);
+
+              -- write(line_out, string'(" current_weights_2_row: "));
+              -- write(line_out, current_weights_2_row);
+
+              -- write(line_out, string'(" popcount_sum: "));
+              -- write(line_out, int_to_leading_zeros(to_integer(popcount_sum), 4));
+
+              -- writeline(output, line_out);
+
+
+
+              current_weights_1_row <= weights_1(matrix_1_i);
+              current_weights_2_row <= weights_2(matrix_2_i);
+
+
+              if matrix_1_i < HIDDEN_SIZE - 1 then
+                matrix_1_i := matrix_1_i + 1;
               end if;
 
+              if is_valid = '1' and matrix_2_i < HIDDEN_SIZE - 1 then
+                matrix_2_i := matrix_2_i + 1;
+              end if;
 
             end if;
+
+
         end if;
     end process;
 

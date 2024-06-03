@@ -1,5 +1,5 @@
 # VHDL files
-VHDL_FILES = xnor_popcount/xnor_popcount.vhd xnor_popcount/xnor_popcount_testbench.vhd
+VHDL_FILES = predict/predict_package.vhd xnor_popcount/xnor_popcount.vhd xnor_popcount/xnor_popcount_testbench.vhd
 			 
 
 # Testbench

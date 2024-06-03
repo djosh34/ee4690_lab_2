@@ -3,88 +3,140 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 use IEEE.math_real.all;
+use work.predict_package.all;
 
 
 entity xnor_popcount is
     generic (
-        N : integer := 64  -- Width of the input vectors
+        N : integer := 768
     );
     port (
         clk : in std_logic;
         rst : in std_logic;
-        start : in std_logic;
-        done : out std_logic;
-        weights_vector : in std_logic_vector(N-1 downto 0);
-        input_vector : in std_logic_vector(N-1 downto 0);
-        popcount : out unsigned(integer(ceil(log2(real(N))))-1 downto 0);
+        enable : in std_logic;
+        is_valid : out std_logic;
+
+        input_input : in std_logic_vector(0 to N-1);
+        input_weights : in std_logic_vector(0 to N-1);
+
+        is_sum_high : out std_logic;
         
+        
+
+
         -- Debugging signals
-        xnor_result : out std_logic_vector(N-1 downto 0);
-        step : out unsigned(integer(ceil(log2(real(N)))) downto 0)
+        popcount_sum : out unsigned(clog2(N)-1 downto 0) := (others => '0')
     );
 end xnor_popcount;
 
 architecture Behavioral of xnor_popcount is
-    type state_type is (XNOR_IDLE, XNOR_CALCULATING, XNOR_DONE);
+  constant levels : integer := 4;
 
-    signal state : state_type := XNOR_IDLE;
-    signal internal_xnor_result : std_logic_vector(N-1 downto 0);
-    signal internal_count : unsigned(integer(ceil(log2(real(N))))-1 downto 0);
+  -- type top_array_logic_type is array (0 to N-1) of std_logic;
+  -- type top_array_type is array (0 to N-1) of unsigned(0 downto 0);
+  type level_1_array_type is array (0 to N/16-1) of unsigned(5 - 1 downto 0); -- 768/16 = 48
+  type level_2_array_type is array (0 to N/(16 * 4)-1) of unsigned(7 - 1 downto 0); -- 768/64 = 12
+  type level_3_array_type is array (0 to N/(16 * 4 * 4)-1) of unsigned(9 - 1 downto 0); -- 768/256 = 3
+
+
+  signal top_array : logic_array(0 to N-1);
+  signal level_1_array : level_1_array_type;
+  signal level_2_array : level_2_array_type;
+  signal level_3_array : level_3_array_type;
+
+
+
 begin
-    -- xnor_result <= weights_vector xnor input_vector;
-    xnor_result <= internal_xnor_result;
+
+    -- constant top_array = input_input xnor input_weights;
+    top_array_xnor_mapping : for i in 0 to N-1 generate
+    begin
+      top_array(i) <= input_input(i) xnor input_weights(i);
+    end generate top_array_xnor_mapping;
+
+
+
+
+
 
     process(clk)
+      variable will_be_valid : integer := 0;
+
+      variable top_array_var : unsigned_array(0 to N-1);
+      variable level_1_array_var : level_1_array_type;
+      variable level_2_array_var : level_2_array_type;
+      variable level_3_array_var : level_3_array_type;
+      variable final_sum_var : unsigned(10 - 1 downto 0);
     begin
-        if rising_edge(clk) then
-            if rst = '1' then
-                internal_xnor_result <= (others => '0');
-                internal_count <= (others => '0');
-                done <= '0';
-                step <= (others => '0');
+        if rising_edge(clk) and  rst = '1' then
 
-            elsif start = '1' or state /= XNOR_IDLE then
-                case state is
-                    when XNOR_IDLE =>
-                        state <= XNOR_CALCULATING;
-                        done <= '0';
-                        step <= (others => '0');
-                        internal_xnor_result <= weights_vector xnor input_vector;
-                        internal_count <= (others => '0');
+          is_valid <= '0';
+          will_be_valid := 0;
+          level_1_array <= (others => (others => '0'));
+          level_2_array <= (others => (others => '0'));
+          level_3_array <= (others => (others => '0'));
+          popcount_sum <= (others => '0');
 
-                    when XNOR_CALCULATING =>
-                        if step = N then
-                            state <= XNOR_DONE;
-                            internal_xnor_result <= weights_vector xnor input_vector;
-                            done <= '1';
-                        else
-                            step <= step + 1;
-                            if internal_xnor_result(N-1) = '1' then
-                                internal_count <= internal_count + 1;
-                            end if;
-                            -- just a shift to the right
-                            internal_xnor_result <= internal_xnor_result(N-2 downto 0) & '0';
-                        end if;
+        elsif rising_edge(clk) and enable = '1' then
 
-                    when XNOR_DONE =>
-                        state <= XNOR_IDLE;
-                        done <= '0';
-                        step <= (others => '0');
-                end case;
-                -- internal_xnor_result <= weights_vector xnor input_vector;
-                -- internal_count <= (others => '0');
-                
-                -- for i in 0 to N-1 loop
-                --     if internal_xnor_result(i) = '1' then
-                --         internal_count <= internal_count + 1;
-                --     end if;
-                -- end loop;
-                
-                -- calculation_done <= '1';
-            end if;
+          -- sum top_array_type -> level_1_array_type
+          top_array_var := array_to_unsigned(top_array);
+
+          for i in 0 to N/16-1 loop
+            level_1_array_var(i) := (others => '0');
+            for j in 0 to 15 loop
+              level_1_array_var(i) := level_1_array_var(i) + unsigned(top_array_var(i*16 + j));
+            end loop;
+          end loop;
+
+          level_1_array <= level_1_array_var;
+
+          -- sum level_1_array_type -> level_2_array_type
+          for i in 0 to N/(16 * 4)-1 loop
+            level_2_array_var(i) := (others => '0');
+            for j in 0 to 3 loop
+              level_2_array_var(i) := level_2_array_var(i) + level_1_array(i*4 + j);
+            end loop;
+          end loop;
+
+          level_2_array <= level_2_array_var;
+
+          -- sum level_2_array_type -> level_3_array_type
+          for i in 0 to N/(16 * 4 * 4)-1 loop
+            level_3_array_var(i) := (others => '0');
+            for j in 0 to 3 loop
+              level_3_array_var(i) := level_3_array_var(i) + level_2_array(i*4 + j);
+            end loop;
+          end loop;
+
+          level_3_array <= level_3_array_var;
+
+          -- sum level_3_array_type -> final_sum_type
+          final_sum_var := (others => '0');
+          for i in 0 to N/(16 * 4 * 4)-1 loop
+            final_sum_var := final_sum_var + level_3_array(i);
+          end loop;
+
+          popcount_sum <= final_sum_var;
+          
+
+
+
+          will_be_valid := will_be_valid + 1;
+
+          if will_be_valid >= levels then
+            is_valid <= '1';
+          end if;
         end if;
     end process;
 
-    popcount <= internal_count;
+
+    is_sum_high <= '1' when popcount_sum >= 384 else '0'; -- greater or equal to 384
+
+
+
+
+
+
 end Behavioral;
 
