@@ -19,8 +19,8 @@ architecture testbench of xnor_popcount_testbench is
 
     signal is_valid : std_logic;
 
-    signal input_input : std_logic_vector(N-1 downto 0) := (others => '0');
-    signal input_weights : std_logic_vector(N-1 downto 0) := (others => '0');
+    signal input_input : std_logic_vector(0 to N-1) := (others => '0');
+    signal input_weights : std_logic_vector(0 to N-1) := (others => '0');
 
     signal is_sum_high : std_logic;
     signal popcount_sum : unsigned(clog2(N)-1 downto 0);
@@ -36,31 +36,6 @@ architecture testbench of xnor_popcount_testbench is
         end loop;
         return result;
     end function;
-
-    -- component xnor_popcount
-    --     generic (
-    --         N : integer := 768
-    --     );
-    --     port (
-    --         clk : in std_logic;
-    --         rst : in std_logic;
-    --         enable : in std_logic;
-    --         is_valid : out std_logic;
-
-    --         input_input : in std_logic_vector(N-1 downto 0);
-    --         input_weights : in std_logic_vector(N-1 downto 0);
-
-    --         is_sum_high : out std_logic;
-            
-            
-
-
-    --         -- Debugging signals
-    --         popcount_sum : out unsigned(clog2(N)-1 downto 0)
-    --     );
-    -- end component;
-
-
 
 
 
@@ -113,8 +88,8 @@ begin
         variable weights_1_line_row : line;
         variable expected_sum_row : line;
 
-        variable input_vector_row : std_logic_vector(N-1 downto 0);
-        variable weights_1_vector_row : std_logic_vector(N-1 downto 0);
+        variable input_vector_row : std_logic_vector(0 to N-1);
+        variable weights_1_vector_row : std_logic_vector(0 to N-1);
         variable expected_sum_vector_row : integer;
         variable expected_is_high : std_logic;
 

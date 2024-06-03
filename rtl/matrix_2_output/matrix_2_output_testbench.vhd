@@ -36,63 +36,7 @@ architecture testbench of matrix_2_output_testbench is
 
     signal weights_2_vector : weights_2_type; -- 1024 x 10
 
-    type weights_temp_array_type is array(0 to OUTPUT_DIM - 1) of std_logic_vector(0 to HIDDEN_DIM - 1);
 
-
-    -- populate the weights_2 array
-    function read_and_populate_weights_2 return weights_2_type is
-      variable weights_temp_array : weights_temp_array_type;
-      variable weights_out_array : weights_2_type;
-
-      variable weights_line : line;
-      variable output_i : integer := 0;
-
-
-      variable line_out : line;
-    begin
-      write(line_out, string'("Reading weights 2 from file..."));
-      writeline(output, line_out);
-
-      -- weights array: 10 x 1024
-      while not endfile(weights_2_file) loop
-
-        readline(weights_2_file, weights_line);
-        read(weights_line, weights_temp_array(output_i));
-
-        -- write(line_out, string'("output_i: "));
-        -- write(line_out, int_to_leading_zeros(output_i, 4));
-        -- write(line_out, string'(" "));
-        -- write(line_out, string'(" Data: "));
-        -- write(line_out, weights_array(output_i));
-        -- writeline(output, line_out);
-
-        output_i := output_i + 1;
-      end loop;
-
-      write(line_out, string'("Done reading weights 2 from file..."));
-      writeline(output, line_out);
-      write(line_out, string'("Populating weights 2..."));
-      writeline(output, line_out);
-
-    -- virtual transpose, so now output for each hidden_i output 10 bits
-      weights_out_array := (others => (others => '0'));
-      for i in 0 to HIDDEN_SIZE - 1 loop
-
-        for j in 0 to OUTPUT_SIZE - 1 loop
-          weights_out_array(i)(j) := weights_temp_array(j)(i);
-        end loop;
-
-        -- write(line_out, string'("i: "));
-        -- write(line_out, int_to_leading_zeros(i, 4));
-        -- write(line_out, string'(" Data: "));
-        -- write(line_out, weights_out_array(i));
-        -- writeline(output, line_out);
-
-      end loop;
-
-
-      return weights_out_array;
-    end function;
 
 begin
   uut: entity work.matrix_2_output
@@ -158,18 +102,6 @@ begin
 
         wait for clk_period;
 
-
-		-- - [ ] while input_file not end
-		-- 	- [ ] input_line <- readline input
-		-- 	- [ ] input_var <- input_line
-		-- 	- [ ] for i in 0 to input_var'length - 1
-		-- 		- [ ] current_weights <= weights_2_array(i)
-		-- 		- [ ] current_input <= input_var(i)
-		-- 		- [ ] advance clock
-		-- 	- [ ] check signal done = 1
-		-- 	- [ ] output_line <- readline output_file
-		-- 	- [ ] check prediction = ouput
-		-- 	- [ ] reset sequence
 
         while not endfile(input_file) loop
             readline(input_file, input_line_row);
