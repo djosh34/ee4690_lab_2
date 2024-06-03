@@ -6,6 +6,9 @@ use IEEE.math_real.all;
 
 package predict_package is
     function int_to_leading_zeros(x, string_width : integer) return string;
+    function clog2(x : integer) return integer;
+    function std_logic_to_boolean_char(x : std_logic) return string;
+
 
     type state_type is (PREDICT_IDLE, PREDICT_RUNNING, PREDICT_DONE);
     function state_to_string(state : state_type) return string;
@@ -26,6 +29,26 @@ package body predict_package is
       end loop;
       return out_string;
     end int_to_leading_zeros;
+
+
+    function clog2(x : integer) return integer is
+      variable i : integer := 0;
+    begin
+      while 2**i < x loop
+        i := i + 1;
+      end loop;
+      return i;
+    end clog2;
+
+
+    function std_logic_to_boolean_char(x : std_logic) return string is
+    begin
+      if x = '1' then
+        return "TRUE ";
+      else
+        return "FALSE";
+      end if;
+    end std_logic_to_boolean_char;
 
     function state_to_string(state : state_type) return string is
     begin
