@@ -41,8 +41,8 @@ read_hdl -vhd "./rtl/xnor_popcount/xnor_popcount.vhd"
 read_hdl -vhd "./rtl/predict/predict.vhd"
 
 
-elaborate lfsr_10 
-# elaborate matrix_2_output 
+# elaborate lfsr_10 
+elaborate matrix_2_output 
 # elaborate xnor_popcount 
 # elaborate predict 
 
