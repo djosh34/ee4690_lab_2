@@ -4,7 +4,8 @@ use IEEE.NUMERIC_STD.ALL;
 use std.textio.all;
 
 use IEEE.math_real.all;
-use std.env.all;
+-- use std.env.all;
+use ieee.std_logic_textio.all;
 
 library work;
 use work.predict_package.all;
@@ -123,7 +124,7 @@ begin
             -- writeline(output, line_out);
 
             for i in 0 to OUTPUT_SIZE - 1 loop
-                if output_row(i) = 1 and expected_output(i) = 0 then
+                if output_row(i) = '1' and expected_output(i) = '0' then
                     were_there_errors := true;
                     write(line_out, string'("Error in output"));
                     writeline(output, line_out);

@@ -6,7 +6,7 @@ VHDL_FILES = predict/predict_package.vhd xnor_popcount/xnor_popcount.vhd matrix_
 TESTBENCH = predict_testbench
 
 # GHDL configuration
-GHDL_FLAGS = --std=08
+GHDL_FLAGS = --std=93 --ieee=synopsys
 GHDL_CMD = /usr/local/bin/ghdl
 
 WORKDIR = ./build

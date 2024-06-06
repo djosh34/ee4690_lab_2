@@ -46,6 +46,7 @@ architecture Behavioral of xnor_popcount is
 
 
 
+  signal popcount_sum_internal : unsigned(clog2(N)-1 downto 0) := (others => '0');
 begin
 
     -- constant top_array = input_input xnor input_weights;
@@ -57,6 +58,8 @@ begin
 
 
 
+    is_sum_high <= '1' when popcount_sum_internal >= 384 else '0';
+    popcount_sum <= popcount_sum_internal;
 
 
     process(clk)
@@ -75,7 +78,7 @@ begin
           level_1_array <= (others => (others => '0'));
           level_2_array <= (others => (others => '0'));
           level_3_array <= (others => (others => '0'));
-          popcount_sum <= (others => '0');
+          popcount_sum_internal <= (others => '0');
 
         elsif rising_edge(clk) and enable = '1' then
 
@@ -117,7 +120,7 @@ begin
             final_sum_var := final_sum_var + level_3_array(i);
           end loop;
 
-          popcount_sum <= final_sum_var;
+          popcount_sum_internal <= final_sum_var;
           
 
 
@@ -131,7 +134,6 @@ begin
     end process;
 
 
-    is_sum_high <= '1' when popcount_sum >= 384 else '0'; -- greater or equal to 384
 
 
 

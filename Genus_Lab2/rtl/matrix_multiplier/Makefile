@@ -6,7 +6,7 @@ VHDL_FILES = matrix_multiplier/matrix_multiplier.vhd \
 TESTBENCH = matrix_multiplier_testbench
 
 # GHDL configuration
-GHDL_FLAGS = --std=08
+GHDL_FLAGS = --std=93 
 GHDL_CMD = /usr/local/bin/ghdl
 
 WORKDIR = ./build

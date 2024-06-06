@@ -5,6 +5,8 @@ use IEEE.NUMERIC_STD.ALL;
 use IEEE.math_real.all;
 
 use std.textio.all;
+use ieee.std_logic_textio.all;
+
 
 package predict_package is
     function int_to_leading_zeros(x, string_width : integer) return string;
@@ -75,7 +77,7 @@ package body predict_package is
     function array_to_unsigned(input: logic_array) return unsigned_array is
       variable output: unsigned_array(0 to input'length - 1);
     begin
-      for i in 0 to input'length - 1 loop
+      for i in input'range loop
         output(i) := "" & input(i);
       end loop;
       return output;

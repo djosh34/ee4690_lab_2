@@ -116,14 +116,26 @@ begin
         should_increment_logic := current_weights_row(i) xnor current_input_bit;
         should_increment_vector(i) := should_increment_logic;
 
-        should_increment_bit := b"1" when should_increment_logic = '1' else b"0";
+        -- should_increment_bit := b"1" when should_increment_logic = '1' else b"0";
+        if should_increment_logic = '1' then
+          should_increment_bit := "1";
+        else
+          should_increment_bit := "0";
+        end if;
+
         output_accumulator(i) <= output_accumulator(i) + should_increment_bit;
       end loop;
 
 
       will_highest_increment_vector := should_increment_vector and equal_to_highest;
       will_highest_increment := or_reduce(will_highest_increment_vector);
-      will_highest_increment_bit := b"1" when will_highest_increment = '1' else b"0";
+
+      -- will_highest_increment_bit := b"1" when will_highest_increment = '1' else b"0";
+      if will_highest_increment = '1' then
+        will_highest_increment_bit := "1";
+      else
+        will_highest_increment_bit := "0";
+      end if;
 
       highest_counter <= highest_counter + will_highest_increment_bit;
 

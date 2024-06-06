@@ -34,10 +34,10 @@ set_attribute library [glob -directory [get_attribute lib_search_path] -tails *.
 #     read_hdl -vhdl2008 $file
 # }
 
-read_hdl -vhd2008 "./rtl/predict/predict_package.vhd"
-read_hdl -vhd2008 "./rtl/matrix_2_output/matrix_2_output.vhd"
-read_hdl -vhd2008 "./rtl/xnor_popcount/xnor_popcount.vhd"
-read_hdl -vhd2008 "./rtl/predict/predict.vhd"
+read_hdl -vhd "./rtl/predict/predict_package.vhd"
+read_hdl -vhd "./rtl/matrix_2_output/matrix_2_output.vhd"
+read_hdl -vhd "./rtl/xnor_popcount/xnor_popcount.vhd"
+read_hdl -vhd "./rtl/predict/predict.vhd"
 
 
 elaborate matrix_2_output 

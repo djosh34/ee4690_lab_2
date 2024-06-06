@@ -5,6 +5,7 @@ use IEEE.NUMERIC_STD.ALL;
 use IEEE.math_real.all;
 
 use std.textio.all;
+use ieee.std_logic_textio.all;
 
 library work;
 use work.predict_package.all;
