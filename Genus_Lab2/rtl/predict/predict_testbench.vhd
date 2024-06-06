@@ -141,7 +141,7 @@ begin
                     writeline(output, line_out);
                     write(line_out, string'("Got:      "));
                     write(line_out, output_row);
-                    wrteline(output, line_out);
+                    writeline(output, line_out);
                     were_there_errors := true;
                     error_counter := error_counter + 1;
                 end if;

@@ -10,6 +10,9 @@ use ieee.std_logic_textio.all;
 library work;
 use work.predict_package.all;
 
+use work.fc1_weights_package.all;
+use work.fc2_weights_package.all;
+
 entity predict is
     generic (
         INPUT_SIZE : integer := 768;
@@ -33,8 +36,6 @@ architecture Behavioral of predict is
     -- - [ ] Matrix  weights_2 10 * 1024 bits = 10 * 16 * 64 bits
 
 
-    file weights_1_file : text open read_mode is weights_1_filename;
-    file weights_2_file : text open read_mode is weights_2_filename;
 
 
     constant weights_1 : weights_1_type := read_and_populate_weights_1;
