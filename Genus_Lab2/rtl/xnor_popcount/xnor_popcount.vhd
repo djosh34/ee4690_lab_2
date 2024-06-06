@@ -39,10 +39,11 @@ architecture Behavioral of xnor_popcount is
   type level_3_array_type is array (0 to N/(16 * 4 * 4)-1) of unsigned(9 - 1 downto 0); -- 768/256 = 3
 
 
-  signal top_array : logic_array(0 to N-1);
-  signal level_1_array : level_1_array_type;
-  signal level_2_array : level_2_array_type;
-  signal level_3_array : level_3_array_type;
+  signal top_array : std_logic_vector(0 to N-1);
+  -- signal top_array : logic_array(0 to N-1);
+  -- signal level_1_array : level_1_array_type;
+  -- signal level_2_array : level_2_array_type;
+  -- signal level_3_array : level_3_array_type;
 
 
 
@@ -50,10 +51,11 @@ architecture Behavioral of xnor_popcount is
 begin
 
     -- constant top_array = input_input xnor input_weights;
-    top_array_xnor_mapping : for i in 0 to N-1 generate
-    begin
-      top_array(i) <= input_input(i) xnor input_weights(i);
-    end generate top_array_xnor_mapping;
+    -- top_array_xnor_mapping : for i in 0 to N-1 generate
+    -- begin
+    --   top_array(i) <= input_input(i) xnor input_weights(i);
+    -- end generate top_array_xnor_mapping;
+    top_array <= input_input xnor input_weights;
 
 
 
@@ -63,74 +65,86 @@ begin
 
 
     process(clk)
-      variable will_be_valid : integer := 0;
+      -- variable will_be_valid : integer := 0;
 
-      variable top_array_var : unsigned_array(0 to N-1);
-      variable level_1_array_var : level_1_array_type;
-      variable level_2_array_var : level_2_array_type;
-      variable level_3_array_var : level_3_array_type;
-      variable final_sum_var : unsigned(10 - 1 downto 0);
+      -- variable top_array_var : unsigned_array(0 to N-1);
+      -- variable level_1_array_var : level_1_array_type;
+      -- variable level_2_array_var : level_2_array_type;
+      -- variable level_3_array_var : level_3_array_type;
+      -- variable final_sum_var : unsigned(10 - 1 downto 0);
+      variable bit_add : unsigned(0 downto 0) := (others => '0');
+      variable sum : unsigned(10 - 1 downto 0) := (others => '0');
     begin
         if rising_edge(clk) then
           if rst = '1' then
 
             is_valid <= '0';
-            will_be_valid := 0;
-            level_1_array <= (others => (others => '0'));
-            level_2_array <= (others => (others => '0'));
-            level_3_array <= (others => (others => '0'));
-            popcount_sum_internal <= (others => '0');
+            -- will_be_valid := 0;
+            -- level_1_array <= (others => (others => '0'));
+            -- level_2_array <= (others => (others => '0'));
+            -- level_3_array <= (others => (others => '0'));
+            bit_add := (others => '0');
 
           else
 
             -- sum top_array_type -> level_1_array_type
-            top_array_var := array_to_unsigned(top_array);
+            -- top_array_var := array_to_unsigned(top_array);
 
-            for i in 0 to N/16-1 loop
-              level_1_array_var(i) := (others => '0');
-              for j in 0 to 15 loop
-                level_1_array_var(i) := level_1_array_var(i) + unsigned(top_array_var(i*16 + j));
-              end loop;
+            -- for i in 0 to N/16-1 loop
+            --   level_1_array_var(i) := (others => '0');
+            --   for j in 0 to 15 loop
+            --     level_1_array_var(i) := level_1_array_var(i) + unsigned(top_array_var(i*16 + j));
+            --   end loop;
+            -- end loop;
+
+            -- level_1_array <= level_1_array_var;
+
+            -- -- sum level_1_array_type -> level_2_array_type
+            -- for i in 0 to N/(16 * 4)-1 loop
+            --   level_2_array_var(i) := (others => '0');
+            --   for j in 0 to 3 loop
+            --     level_2_array_var(i) := level_2_array_var(i) + level_1_array(i*4 + j);
+            --   end loop;
+            -- end loop;
+
+            -- level_2_array <= level_2_array_var;
+
+            -- -- sum level_2_array_type -> level_3_array_type
+            -- for i in 0 to N/(16 * 4 * 4)-1 loop
+            --   level_3_array_var(i) := (others => '0');
+            --   for j in 0 to 3 loop
+            --     level_3_array_var(i) := level_3_array_var(i) + level_2_array(i*4 + j);
+            --   end loop;
+            -- end loop;
+
+            -- level_3_array <= level_3_array_var;
+
+            -- -- sum level_3_array_type -> final_sum_type
+            -- final_sum_var := (others => '0');
+            -- for i in 0 to N/(16 * 4 * 4)-1 loop
+            --   final_sum_var := final_sum_var + level_3_array(i);
+            -- end loop;
+
+            -- popcount_sum_internal <= final_sum_var;
+
+            -- alternative direct sum
+            sum := (others => '0');
+            for i in 0 to N-1 loop
+              bit_add := ("" & top_array(i));
+              sum := sum + bit_add;
             end loop;
 
-            level_1_array <= level_1_array_var;
-
-            -- sum level_1_array_type -> level_2_array_type
-            for i in 0 to N/(16 * 4)-1 loop
-              level_2_array_var(i) := (others => '0');
-              for j in 0 to 3 loop
-                level_2_array_var(i) := level_2_array_var(i) + level_1_array(i*4 + j);
-              end loop;
-            end loop;
-
-            level_2_array <= level_2_array_var;
-
-            -- sum level_2_array_type -> level_3_array_type
-            for i in 0 to N/(16 * 4 * 4)-1 loop
-              level_3_array_var(i) := (others => '0');
-              for j in 0 to 3 loop
-                level_3_array_var(i) := level_3_array_var(i) + level_2_array(i*4 + j);
-              end loop;
-            end loop;
-
-            level_3_array <= level_3_array_var;
-
-            -- sum level_3_array_type -> final_sum_type
-            final_sum_var := (others => '0');
-            for i in 0 to N/(16 * 4 * 4)-1 loop
-              final_sum_var := final_sum_var + level_3_array(i);
-            end loop;
-
-            popcount_sum_internal <= final_sum_var;
+            popcount_sum_internal <= sum;
+            is_valid <= '1';
             
 
 
 
-            will_be_valid := will_be_valid + 1;
+            -- will_be_valid := will_be_valid + 1;
 
-            if will_be_valid >= levels then
-              is_valid <= '1';
-            end if;
+            -- if will_be_valid >= levels then
+            --   is_valid <= '1';
+            -- end if;
         end if;
       end if;
     end process;
