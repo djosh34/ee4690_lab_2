@@ -1,4 +1,4 @@
-set_db common_ui false
+# set_db common_ui false
 
 set_attribute lib_search_path "./libs"
 
@@ -34,10 +34,10 @@ set_attribute library [glob -directory [get_attribute lib_search_path] -tails *.
 #     read_hdl -vhdl2008 $file
 # }
 
-read_hdl -vhdl "./rtl/predict/predict_package.vhd"
-read_hdl -vhdl "./rtl/matrix_2_output/matrix_2_output.vhd"
-read_hdl -vhdl "./rtl/xnor_popcount/xnor_popcount.vhd"
-read_hdl -vhdl "./rtl/predict/predict.vhd"
+read_hdl -vhd2008 "./rtl/predict/predict_package.vhd"
+read_hdl -vhd2008 "./rtl/matrix_2_output/matrix_2_output.vhd"
+read_hdl -vhd2008 "./rtl/xnor_popcount/xnor_popcount.vhd"
+read_hdl -vhd2008 "./rtl/predict/predict.vhd"
 
 
 elaborate matrix_2_output 
