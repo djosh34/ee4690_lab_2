@@ -19,7 +19,7 @@ entity predict is
         weights_2_filename : string := "./examples/fc2_weight_bin.txt"
     );
     port (
-        clk : in std_logic;
+        CLK : in std_logic;
         rst : in std_logic;
 
         input_row : in std_logic_vector(0 to INPUT_SIZE - 1);
