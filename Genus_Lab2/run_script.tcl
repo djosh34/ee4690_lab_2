@@ -14,7 +14,7 @@ set_attribute library [glob -directory [get_attribute lib_search_path] -tails *.
 
 # Specify the VHDL version
 # set_attribute hdl_language vhdl-2008
-set_db / .hdl_vhdl_read_version 2008
+# set_db / .hdl_vhdl_read_version 2008
 
 
 # List of VHDL files to be read in the specified order
