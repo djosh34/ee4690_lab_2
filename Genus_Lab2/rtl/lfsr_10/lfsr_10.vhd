@@ -46,6 +46,7 @@ begin
             lfsr_output_var(9) <= lfsr_output_var(8);
             lfsr_output_var(10) <= lfsr_output_var(9);
           end if;
+          lol
 
         end if;
       end if;
