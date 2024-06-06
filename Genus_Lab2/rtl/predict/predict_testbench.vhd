@@ -30,6 +30,8 @@ architecture testbench of predict_testbench is
     constant weights_1_filename : string := "/pwd/predict/weights/fc1_weight_bin.txt";
     constant weights_2_filename : string := "/pwd/predict/weights/fc2_weight_bin.txt";
 
+    signal cycle_counter : integer := 0;
+
 
 
 
@@ -59,6 +61,8 @@ begin
         wait for clk_period / 2;
         clk <= '1';
         wait for clk_period / 2;
+
+        cycle_counter <= cycle_counter + 1;
     end process;
 
     -- Test process
@@ -70,6 +74,9 @@ begin
         variable line_in : line;
         variable line_out : line;
         variable null_line : line;
+
+        variable starting_cycles : integer := 0;
+        variable ending_cycles : integer := 0;
 
         variable input_row_var : std_logic_vector(0 to INPUT_SIZE - 1);
         variable expected_output : std_logic_vector(0 to OUTPUT_SIZE - 1);
@@ -112,13 +119,18 @@ begin
             rst <= '1';
             wait for 20 ns;
 
+            starting_cycles := cycle_counter;
+
             rst <= '0';
             wait for 20 ns;
+
 
             -- write(line_out, string'("Waiting for done..."));
             -- writeline(output, line_out);
 
             wait until done = '1';
+
+            ending_cycles := cycle_counter;
 
             -- write(line_out, string'("Checking output..."));
             -- writeline(output, line_out);
@@ -141,10 +153,12 @@ begin
 
             write(line_out, string'("i: "));
             write(line_out, int_to_leading_zeros(i_loop_stopper, 4));
-            write(line_out, string'("  Output is correct"));
+            write(line_out, string'("  Output is correct  cycles: "));
+            write(line_out, int_to_leading_zeros(ending_cycles - starting_cycles, 4));
             writeline(output, line_out);
 
             i_loop_stopper := i_loop_stopper + 1;
+
 
             wait for 20 ns;
         end loop;
@@ -173,7 +187,7 @@ begin
         wait for 20 ns;
 
         write(line_out, string'("Score: "));
-        write(line_out, int_to_leading_zeros(error_counter, 4));
+        write(line_out, int_to_leading_zeros(i_loop_stopper - error_counter, 4));
         write(line_out, string'(" / "));
         write(line_out, int_to_leading_zeros(i_loop_stopper, 4));
         writeline(output, line_out);

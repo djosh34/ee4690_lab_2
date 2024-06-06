@@ -1,12 +1,12 @@
 # VHDL files
-VHDL_FILES = predict/predict_package.vhd lfsr_10/lfsr_10.vhd matrix_2_output/matrix_2_output.vhd matrix_2_output/matrix_2_output_testbench.vhd
+VHDL_FILES = predict/predict_package.vhd lfsr_10/lfsr_10.vhd lfsr_10/lfsr_10_testbench.vhd
 			 
 
 # Testbench
-TESTBENCH = matrix_2_output_testbench
+TESTBENCH = lfsr_10_testbench
 
 # GHDL configuration
-GHDL_FLAGS = --std=08
+GHDL_FLAGS = --std=93 --ieee=synopsys
 GHDL_CMD = /usr/local/bin/ghdl
 
 WORKDIR = ./build

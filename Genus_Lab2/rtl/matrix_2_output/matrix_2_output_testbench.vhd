@@ -24,18 +24,13 @@ architecture testbench of matrix_2_output_testbench is
 
     signal prediction : std_logic_vector(0 to OUTPUT_DIM - 1);
     signal done : std_logic;
+    signal enable : std_logic := '0';
 
     file input_file : text open read_mode is "/pwd/matrix_2_output/examples/input.txt";
     file expected_output_file : text open read_mode is "/pwd/matrix_2_output/examples/output.txt";
+
     file weights_2_file : text open read_mode is "/pwd/predict/weights/fc2_weight_bin.txt";
-
-
-
-
-
-
-    signal weights_2_vector : weights_2_type; -- 1024 x 10
-
+    constant weights_2_vector : weights_2_type := read_and_populate_weights_2(weights_2_file);
 
 
 begin
@@ -47,6 +42,7 @@ begin
         port map (
             clk => clk,
             rst => rst,
+            enable => enable,
             current_weights_row => current_weights_row,
             current_input_bit => current_input_bit,
             prediction => prediction,
@@ -96,11 +92,13 @@ begin
         wait for clk_period;
         rst <= '0';
 
-        weights_2_vector <= read_and_populate_weights_2;
+        -- weights_2_vector <= read_and_populate_weights_2;
 
 
 
         wait for clk_period;
+
+        enable <= '1';
 
 
         while not endfile(input_file) loop
@@ -167,11 +165,9 @@ begin
 
 
         if were_there_errors then
-            report "Test failed";
-            finish;
+            report "Test failed" severity failure;
         else
-            report "Test passed";
-            finish;
+            report "Test passed" severity failure;
         end if;
 
         wait;
