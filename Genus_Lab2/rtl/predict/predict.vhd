@@ -14,9 +14,7 @@ entity predict is
     generic (
         INPUT_SIZE : integer := 768;
         HIDDEN_SIZE : integer := 1024;
-        OUTPUT_SIZE : integer := 10;
-        weights_1_filename : string := "./examples/fc1_weight_bin.txt";
-        weights_2_filename : string := "./examples/fc2_weight_bin.txt"
+        OUTPUT_SIZE : integer := 10
     );
     port (
         CLK : in std_logic;
@@ -39,8 +37,8 @@ architecture Behavioral of predict is
     file weights_2_file : text open read_mode is weights_2_filename;
 
 
-    constant weights_1 : weights_1_type := read_and_populate_weights_1(weights_1_file);
-    constant weights_2 : weights_2_type := read_and_populate_weights_2(weights_2_file);
+    constant weights_1 : weights_1_type := read_and_populate_weights_1;
+    constant weights_2 : weights_2_type := read_and_populate_weights_2;
 
     signal is_valid : std_logic;
     signal is_sum_high : std_logic;

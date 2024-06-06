@@ -27,8 +27,6 @@ architecture testbench of predict_testbench is
     signal done : std_logic;
 
 
-    constant weights_1_filename : string := "/pwd/predict/weights/fc1_weight_bin.txt";
-    constant weights_2_filename : string := "/pwd/predict/weights/fc2_weight_bin.txt";
 
     signal cycle_counter : integer := 0;
 
@@ -40,9 +38,7 @@ begin
         generic map (
             INPUT_SIZE => INPUT_SIZE,
             HIDDEN_SIZE => HIDDEN_SIZE,
-            OUTPUT_SIZE => OUTPUT_SIZE,
-            weights_1_filename => weights_1_filename,
-            weights_2_filename => weights_2_filename 
+            OUTPUT_SIZE => OUTPUT_SIZE
         )
         port map (
             clk => clk,
@@ -145,7 +141,7 @@ begin
                     writeline(output, line_out);
                     write(line_out, string'("Got:      "));
                     write(line_out, output_row);
-                    writeline(output, line_out);
+                    wrteline(output, line_out);
                     were_there_errors := true;
                     error_counter := error_counter + 1;
                 end if;
