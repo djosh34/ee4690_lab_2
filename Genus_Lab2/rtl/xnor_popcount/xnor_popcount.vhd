@@ -11,7 +11,7 @@ entity xnor_popcount is
         N : integer := 768
     );
     port (
-        clk : in std_logic;
+        CLK : in std_logic;
         rst : in std_logic;
         enable : in std_logic;
         is_valid : out std_logic;

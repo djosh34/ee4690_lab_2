@@ -20,7 +20,7 @@ entity matrix_2_output is
         OUTPUT_DIM : integer := 10
     );
     port (
-        clk : in std_logic;
+        CLK : in std_logic;
         rst : in std_logic;
         enable : in std_logic;
 
