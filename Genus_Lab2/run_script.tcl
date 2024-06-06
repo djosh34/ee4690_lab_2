@@ -41,8 +41,8 @@ read_hdl -vhd "./rtl/predict/predict.vhd"
 
 
 # elaborate matrix_2_output 
-elaborate xnor_popcount 
-# elaborate predict 
+# elaborate xnor_popcount 
+elaborate predict 
 
 report hierarchy > ./output/hierarchy.txt
 
@@ -61,12 +61,12 @@ syn_opt
 #-----------------------------------------#
 
 
-write_hdl > ./output/synth_out.v
+write_hdl >             ./output/synth_out.v
 
-write_sdc > ./output/constraint_out.sdc
+write_sdc >             ./output/constraint_out.sdc
 
-report power > ./output/power.log
+report power >          ./output/power.log
 
-report area -depth 0 > ./output/area.log
+report area -depth 2 >  ./output/area.log
 
-report timing > ./output/timing.log
+report timing >         ./output/timing.log
