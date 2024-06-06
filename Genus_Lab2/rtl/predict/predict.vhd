@@ -15,8 +15,8 @@ entity predict is
         INPUT_SIZE : integer := 768;
         HIDDEN_SIZE : integer := 1024;
         OUTPUT_SIZE : integer := 10;
-        weights_1_filename : string;
-        weights_2_filename : string
+        weights_1_filename : string := "./examples/fc1_weight_bin.txt";
+        weights_2_filename : string := "./examples/fc2_weight_bin.txt"
     );
     port (
         clk : in std_logic;
