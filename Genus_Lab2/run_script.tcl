@@ -41,8 +41,8 @@ read_hdl -vhd "./rtl/predict/predict.vhd"
 
 
 # elaborate matrix_2_output 
-# elaborate xnor_popcount 
-elaborate predict 
+elaborate xnor_popcount 
+# elaborate predict 
 
 report hierarchy > ./output/hierarchy.txt
 
