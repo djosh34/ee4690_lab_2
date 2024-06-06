@@ -68,6 +68,6 @@ write_sdc >             ./output/constraint_out.sdc
 
 report power >          ./output/power.log
 
-report area -depth 2 >  ./output/area.log
+report area -depth 0 >  ./output/area.log
 
 report timing >         ./output/timing.log
