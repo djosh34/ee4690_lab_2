@@ -1,4 +1,4 @@
-# set_db common_ui false
+set_db common_ui false
 
 set_attribute lib_search_path "./libs"
 
