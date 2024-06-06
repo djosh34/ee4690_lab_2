@@ -1,4 +1,4 @@
-# set_db common_ui false
+set_db common_ui false
 
 set_attribute lib_search_path "./libs"
 
@@ -24,12 +24,21 @@ set_attribute library [glob -directory [get_attribute lib_search_path] -tails *.
 #     "./rtl/xnor_popcount/xnor_popcount.vhd" \
 #     "./rtl/predict/predict.vhd"]
 
-set mylist [glob -directory "./rtl" -tails "./predict/predict_package.vhd ./matrix_2_output/matrix_2_output.vhd ./xnor_popcount/xnor_popcount.vhd" "./predict/predict.vhd"]
+# set predict_package_list [glob -directory "./rtl/predict" -tails predict_package.vhd]
+# set matrix_2_output_list [glob -directory "./rtl/matrix_2_output" -tails matrix_2_output.vhd]
+# set xnor_popcount_list [glob -directory "./rtl/xnor_popcount" -tails xnor_popcount.vhd]
+# set predict_list [glob -directory "./rtl/predict" -tails predict.vhd]
 
 # Read HDL files in specified order
-foreach file $mylist {
-    read_hdl -vhdl2008 $file
-}
+# foreach file $mylist {
+#     read_hdl -vhdl2008 $file
+# }
+
+read_hdl -vhdl2008 "./rtl/predict/predict_package.vhd"
+read_hdl -vhdl2008 "./rtl/matrix_2_output/matrix_2_output.vhd"
+read_hdl -vhdl2008 "./rtl/xnor_popcount/xnor_popcount.vhd"
+read_hdl -vhdl2008 "./rtl/predict/predict.vhd"
+
 
 elaborate matrix_2_output 
 # elaborate xnor_popcount 
