@@ -96,16 +96,22 @@ begin
 
       done <= '0';
       should_increment_logic := '0';
-      should_increment_vector := (others => '0');
+      -- should_increment_vector := (others => '0');
 
       hidden_dim_counter := 0;
+
+      output_accumulator <= (others => 0);
+      highest_counter <= 0;
 
     elsif rising_edge(clk) and enable = '1' then
 
       -- print all counters including their index and the highest count in normal integer form
 
+      -- write(line_out, string'("hd: "));
+      -- write(line_out, hidden_dim_counter);
+
       -- write(line_out, string'("highest_counter: "));
-      -- write(line_out, unsigned(highest_counter));
+      -- write(line_out, highest_counter);
       -- write(line_out, string'(" "));
       -- write(line_out, string'("output_accumulators: "));
       -- for i in 0 to OUTPUT_DIM - 1 loop
@@ -121,7 +127,7 @@ begin
       -- write(line_out, current_weights_row);
       -- write(line_out, string'(" current_input_bit: "));
       -- write(line_out, current_input_bit);
-      -- -- and their xnor
+      -- and their xnor
       -- write(line_out, string'(" xnor: "));
       -- write(line_out, current_weights_row xnor current_input_bit);
       -- write(line_out, string'(" eq: "));
@@ -133,7 +139,7 @@ begin
         should_increment_logic := current_weights_row(i) xnor current_input_bit;
 
         if should_increment_logic = '1' then
-          output_accumulator(i) := output_accumulator(i) + 1;
+          output_accumulator(i) <= output_accumulator(i) + 1;
         end if;
 
         if should_increment_logic = '1' and output_accumulator(i) = highest_counter then
@@ -145,7 +151,7 @@ begin
 
       -- enable_accumulator_array <= should_increment_vector;
 
-      if hidden_dim_counter = HIDDEN_DIM then
+      if hidden_dim_counter = HIDDEN_DIM - 1 then
         done <= '1';
       else
         hidden_dim_counter := hidden_dim_counter + 1;

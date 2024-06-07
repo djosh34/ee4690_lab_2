@@ -1,12 +1,13 @@
-
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
+
 use std.textio.all;
+use ieee.std_logic_textio.all;
 
 use IEEE.math_real.all;
 use work.predict_package.all;
+use work.fc2_weights_package.all;
 
 entity matrix_2_output_testbench is
 end matrix_2_output_testbench;
@@ -29,9 +30,10 @@ architecture testbench of matrix_2_output_testbench is
     file input_file : text open read_mode is "/pwd/matrix_2_output/examples/input.txt";
     file expected_output_file : text open read_mode is "/pwd/matrix_2_output/examples/output.txt";
 
-    file weights_2_file : text open read_mode is "/pwd/predict/weights/fc2_weight_bin.txt";
-    constant weights_2_vector : weights_2_type := read_and_populate_weights_2(weights_2_file);
+    -- file weights_2_file : text open read_mode is "/pwd/predict/weights/fc2_weight_bin.txt";
+    -- constant weights_2_vector : weights_2_type := read_and_populate_weights_2(weights_2_file);
 
+    constant weights_2_vector : weights_2_type := read_and_populate_weights_2;
 
 begin
   uut: entity work.matrix_2_output
@@ -108,7 +110,7 @@ begin
             readline(expected_output_file, output_line_row);
             read(output_line_row, output_vector_row);
 
-            for i in 0 to input_vector_row'length - 1 loop
+            for i in input_vector_row'range loop
                 current_weights_row <= weights_2_vector(i);
                 current_input_bit <= input_vector_row(i);
 
@@ -147,7 +149,7 @@ begin
             max_test_counter := max_test_counter + 1;
             test_i := test_i + 1;
 
-            -- if max_test_counter > 10 then
+            -- if max_test_counter > 0 then
             --     were_there_errors := true;
             --     report "Test failed: too many tests" severity failure;
             -- end if;
