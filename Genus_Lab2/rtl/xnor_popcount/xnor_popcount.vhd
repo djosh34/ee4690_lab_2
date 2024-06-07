@@ -34,9 +34,10 @@ end xnor_popcount;
 architecture Behavioral of xnor_popcount is
   constant bit_width : integer := 16;
   constant bit_width_2 : integer := 192;
+  constant bit_width_3 : integer := 384;
 
   -- constant levels : integer := N/bit_width + 1;
-  constant levels : integer := 2;
+  constant levels : integer := 3;
 
   signal top_array : std_logic_vector(0 to N-1);
 
@@ -46,9 +47,11 @@ architecture Behavioral of xnor_popcount is
 
   type level_0_in_between_array_type is array(0 to N/bit_width - 1) of integer range 0 to bit_width;
   type level_1_in_between_array_type is array(0 to N/bit_width_2 - 1) of integer range 0 to bit_width_2;
+  type level_2_in_between_array_type is array(0 to N/bit_width_3 - 1) of integer range 0 to bit_width_3;
 
   signal level_0_in_between_array : level_0_in_between_array_type;
   signal level_1_in_between_array : level_1_in_between_array_type;
+  signal level_2_in_between_array : level_2_in_between_array_type;
 
 
 
@@ -63,6 +66,7 @@ begin
 
       variable in_between : integer range 0 to bit_width;
       variable in_between_2 : integer range 0 to bit_width_2;
+      variable in_between_3 : integer range 0 to bit_width_3;
       variable total_sum : integer range 0 to N;
 
       variable line_out : line;
@@ -104,7 +108,7 @@ begin
             -- end if;
 
 
-            -- same but for 2 levels
+            -- same but for 3 levels
             for i in 0 to (N/bit_width - 1) loop
               in_between := 0;
               for j in 0 to (bit_width - 1) loop
@@ -124,9 +128,18 @@ begin
               level_1_in_between_array(i) <= in_between_2;
             end loop;
 
+
+            for i in 0 to (N/bit_width_3 - 1) loop
+              in_between_3 := 0;
+              for j in 0 to (bit_width_3/bit_width_2 - 1) loop
+                in_between_3 := in_between_3 + level_1_in_between_array(i*(bit_width_3/bit_width_2) + j);
+              end loop;
+              level_2_in_between_array(i) <= in_between_3;
+            end loop;
+
             total_sum := 0;
-            for i in 0 to (N/bit_width_2 - 1) loop
-              total_sum := total_sum + level_1_in_between_array(i);
+            for i in 0 to (N/bit_width_3 - 1) loop
+              total_sum := total_sum + level_2_in_between_array(i);
             end loop;
 
             popcount_sum <= total_sum;
