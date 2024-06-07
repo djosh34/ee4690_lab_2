@@ -35,8 +35,8 @@ set_attribute library [glob -directory [get_attribute lib_search_path] -tails *.
 # }
 
 read_hdl -vhd "./rtl/predict/predict_package.vhd"
-read_hdl -vhd "./rtl/predict/weights/fc_1_weights_package.vhd"
-read_hdl -vhd "./rtl/predict/weights/fc_2_weights_package.vhd"
+# read_hdl -vhd "./rtl/predict/weights/fc_1_weights_package.vhd"
+# read_hdl -vhd "./rtl/predict/weights/fc_2_weights_package.vhd"
 read_hdl -vhd "./rtl/lfsr_10/lfsr_10.vhd"
 read_hdl -vhd "./rtl/matrix_2_output/matrix_2_output.vhd"
 read_hdl -vhd "./rtl/xnor_popcount/xnor_popcount.vhd"
@@ -45,8 +45,8 @@ read_hdl -vhd "./rtl/predict/predict.vhd"
 
 # elaborate lfsr_10 
 # elaborate matrix_2_output 
-# elaborate xnor_popcount 
-elaborate predict 
+elaborate xnor_popcount 
+# elaborate predict 
 
 report hierarchy > ./output/hierarchy.txt
 
