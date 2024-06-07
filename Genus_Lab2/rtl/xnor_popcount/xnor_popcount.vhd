@@ -21,13 +21,13 @@ entity xnor_popcount is
         input_input : in std_logic_vector(0 to N-1);
         input_weights : in std_logic_vector(0 to N-1);
 
-        is_sum_high : out std_logic;
+        is_sum_high : out std_logic
         
         
 
 
         -- Debugging signals
-        popcount_sum : out unsigned(clog2(N)-1 downto 0) := (others => '0')
+        -- popcount_sum : out unsigned(clog2(N)-1 downto 0) := (others => '0')
     );
 end xnor_popcount;
 
@@ -89,7 +89,7 @@ begin
 
 
     is_sum_high <= '1' when popcount_sum_internal >= 384 else '0';
-    popcount_sum <= to_unsigned(popcount_sum_internal, clog2(N));
+    -- popcount_sum <= to_unsigned(popcount_sum_internal, clog2(N));
 
 
     process(clk)
