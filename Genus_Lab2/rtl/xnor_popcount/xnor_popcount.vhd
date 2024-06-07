@@ -32,15 +32,23 @@ entity xnor_popcount is
 end xnor_popcount;
 
 architecture Behavioral of xnor_popcount is
-  constant bit_width : integer := 192;
+  constant bit_width : integer := 48;
+  constant bit_width_2 : integer := 192;
+
   -- constant levels : integer := N/bit_width + 1;
-  constant levels : integer := 1;
+  constant levels : integer := 2;
 
   signal top_array : std_logic_vector(0 to N-1);
 
 
-  type in_between_array_type is array(0 to N/bit_width - 1) of integer range 0 to bit_width;
-  signal in_between_array : in_between_array_type;
+  -- type in_between_array_type is array(0 to N/bit_width - 1) of integer range 0 to bit_width;
+  -- signal in_between_array : in_between_array_type;
+
+  type level_0_in_between_array_type is array(0 to N/bit_width - 1) of integer range 0 to bit_width;
+  type level_1_in_between_array_type is array(0 to N/bit_width_2 - 1) of integer range 0 to bit_width_2;
+
+  signal level_0_in_between_array : level_0_in_between_array_type;
+  signal level_1_in_between_array : level_1_in_between_array_type;
 
 
 
@@ -54,6 +62,7 @@ begin
 
 
       variable in_between : integer range 0 to bit_width;
+      variable in_between_2 : integer range 0 to bit_width_2;
       variable total_sum : integer range 0 to N;
 
       variable line_out : line;
@@ -68,7 +77,34 @@ begin
           else
             if enable = '1' then
 
-            -- level 0 to in between
+            -- -- level 0 to in between
+            -- for i in 0 to (N/bit_width - 1) loop
+            --   in_between := 0;
+            --   for j in 0 to (bit_width - 1) loop
+            --     if input_input(i*bit_width + j) = input_weights(i*bit_width + j) then
+            --       in_between := in_between + 1;
+            --     end if;
+            --   end loop;
+            --   in_between_array(i) <= in_between;
+            -- end loop;
+
+
+            -- -- in between to sum
+            -- total_sum := 0;
+            -- for i in 0 to (N/bit_width - 1) loop
+            --   total_sum := total_sum + in_between_array(i);
+            -- end loop;
+
+            -- popcount_sum <= total_sum;
+
+            -- if total_sum >= N/2 then
+            --   is_sum_high <= '1';
+            -- else
+            --   is_sum_high <= '0';
+            -- end if;
+
+
+            -- same but for 2 levels
             for i in 0 to (N/bit_width - 1) loop
               in_between := 0;
               for j in 0 to (bit_width - 1) loop
@@ -76,14 +112,21 @@ begin
                   in_between := in_between + 1;
                 end if;
               end loop;
-              in_between_array(i) <= in_between;
+              level_0_in_between_array(i) <= in_between;
             end loop;
 
 
-            -- in between to sum
+            for i in 0 to (N/bit_width_2 - 1) loop
+              in_between_2 := 0;
+              for j in 0 to (bit_width_2/bit_width - 1) loop
+                in_between_2 := in_between_2 + level_0_in_between_array(i*(bit_width_2/bit_width) + j);
+              end loop;
+              level_1_in_between_array(i) <= in_between_2;
+            end loop;
+
             total_sum := 0;
-            for i in 0 to (N/bit_width - 1) loop
-              total_sum := total_sum + in_between_array(i);
+            for i in 0 to (N/bit_width_2 - 1) loop
+              total_sum := total_sum + level_1_in_between_array(i);
             end loop;
 
             popcount_sum <= total_sum;
