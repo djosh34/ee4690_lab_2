@@ -32,7 +32,7 @@ entity xnor_popcount is
 end xnor_popcount;
 
 architecture Behavioral of xnor_popcount is
-  constant levels : integer := 5;
+  constant levels : integer := 6;
 
   -- type top_array_logic_type is array (0 to N-1) of std_logic;
   -- type top_array_type is array (0 to N-1) of unsigned(0 downto 0);
@@ -72,10 +72,12 @@ architecture Behavioral of xnor_popcount is
   -- signal sum7 : level_7_array_type;
   -- signal sum8 : level_8_array_type;
 
+  type level_0_array_type is array (0 to N/4-1) of integer range 0 to 4;
   type level_1_array_type is array (0 to N/16-1) of integer range 0 to 16;
   type level_2_array_type is array (0 to N/64-1) of integer range 0 to 64;
   type level_3_array_type is array (0 to N/256-1) of integer range 0 to 256;
 
+  signal sum0 : level_0_array_type;
   signal sum1 : level_1_array_type;
   signal sum2 : level_2_array_type;
   signal sum3 : level_3_array_type;
@@ -128,10 +130,12 @@ begin
       -- variable sum7_var : level_7_array_type;
       -- variable sum8_var : level_8_array_type;
 
+      variable bit_add0 : integer range 0 to 4 := 0;
       variable bit_add1 : integer range 0 to 16 := 0;
       variable bit_add2 : integer range 0 to 64 := 0;
       variable bit_add3 : integer range 0 to 256 := 0;
 
+      variable sum0_var : level_0_array_type;
       variable sum1_var : level_1_array_type;
       variable sum2_var : level_2_array_type;
       variable sum3_var : level_3_array_type;
@@ -229,14 +233,23 @@ begin
 
 
             --- try tree 2
+            for i in 0 to N/4-1 loop
+              sum0_var(i) := 0;
+              for j in 0 to 3 loop
+                if top_array(i*4 + j) = '1' then
+                  bit_add0 := 1;
+                else
+                  bit_add0 := 0;
+                end if;
+                sum0_var(i) := sum0_var(i) + bit_add0;
+              end loop;
+              sum0(i) <= sum0_var(i);
+            end loop;
+
             for i in 0 to N/16-1 loop
               sum1_var(i) := 0;
-              for j in 0 to 15 loop
-                if top_array(i*16 + j) = '1' then
-                  bit_add1 := 1;
-                else
-                  bit_add1 := 0;
-                end if;
+              for j in 0 to 3 loop
+                bit_add1 := sum0(i*4 + j);
                 sum1_var(i) := sum1_var(i) + bit_add1;
               end loop;
               sum1(i) <= sum1_var(i);
