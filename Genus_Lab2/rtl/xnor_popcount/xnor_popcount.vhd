@@ -73,8 +73,8 @@ architecture Behavioral of xnor_popcount is
   -- signal sum8 : level_8_array_type;
 
   -- type level_0_array_type is array (0 to N/4-1) of integer range 0 to 4;
-  -- type level_1_array_type is array (0 to N/16-1) of integer range 0 to 16;
-  type level_2_array_type is array (0 to N/64-1) of integer range 0 to 64;
+  type level_1_array_type is array (0 to N/16-1) of integer range 0 to 16;
+  -- type level_2_array_type is array (0 to N/64-1) of integer range 0 to 64;
   type level_3_array_type is array (0 to N/256-1) of integer range 0 to 256;
 
   -- signal sum0 : level_0_array_type;
@@ -137,7 +137,7 @@ begin
 
       -- variable sum0_var : level_0_array_type;
       -- variable sum1_var : level_1_array_type;
-      variable sum2_var : level_2_array_type;
+      variable sum2_var : level_1_array_type;
       variable sum3_var : level_3_array_type;
       variable end_sum  : integer range 0 to 768 := 0;
 
@@ -263,11 +263,55 @@ begin
             --   end loop;
             --   sum2(i) <= sum2_var(i);
             -- end loop;
-            for i in 0 to N/64-1 loop
+
+
+
+--             for i in 0 to N/64-1 loop
+--               sum2_var(i) := 0;
+--               write(line_out, string'(" "));
+--               for j in 0 to 63 loop
+--                 if input_input(i*64 + j) = input_weights(i*64 + j) then
+--                   bit_add2 := 1;
+--                   write(line_out, string'("1"));
+--                 else
+--                   bit_add2 := 0;
+--                   write(line_out, string'("0"));
+--                 end if;
+--                 sum2_var(i) := sum2_var(i) + bit_add2;
+--               end loop;
+--               sum2(i) <= sum2_var(i);
+
+--               write(line_out, string'(" sum2("));
+--               write(line_out, i);
+--               write(line_out, string'(") = "));
+--               write(line_out, sum2_var(i));
+--               -- writeline(output, line_out);
+--             end loop;
+--             -- writeline(output, line_out);
+
+--             for i in 0 to N/256-1 loop
+--               sum3_var(i) := 0;
+--               for j in 0 to 3 loop
+--                 bit_add3 := sum2(i*4 + j);
+--                 sum3_var(i) := sum3_var(i) + bit_add3;
+--               end loop;
+--               sum3(i) <= sum3_var(i);
+
+--               write(line_out, string'("sum3("));
+--               write(line_out, i);
+--               write(line_out, string'(") = "));
+--               write(line_out, sum3_var(i));
+--               -- writeline(output, line_out);
+--             end loop;
+--             -- writeline(output, line_out);
+
+
+
+            for i in 0 to N/16-1 loop
               sum2_var(i) := 0;
               write(line_out, string'(" "));
-              for j in 0 to 63 loop
-                if input_input(i*64 + j) = input_weights(i*64 + j) then
+              for j in 0 to 15 loop
+                if input_input(i*16 + j) = input_weights(i*16 + j) then
                   bit_add2 := 1;
                   write(line_out, string'("1"));
                 else
@@ -288,8 +332,8 @@ begin
 
             for i in 0 to N/256-1 loop
               sum3_var(i) := 0;
-              for j in 0 to 3 loop
-                bit_add3 := sum2(i*4 + j);
+              for j in 0 to 15 loop
+                bit_add3 := sum2(i*16 + j);
                 sum3_var(i) := sum3_var(i) + bit_add3;
               end loop;
               sum3(i) <= sum3_var(i);
@@ -301,6 +345,7 @@ begin
               -- writeline(output, line_out);
             end loop;
             -- writeline(output, line_out);
+
 
             end_sum := 0;
             for j in 0 to 2 loop
