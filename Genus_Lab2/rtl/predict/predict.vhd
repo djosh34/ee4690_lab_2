@@ -93,8 +93,8 @@ begin
 
 
     process(clk)
-      variable matrix_1_i : natural (0 to HIDDEN_SIZE - 1) := 0;
-      variable matrix_2_i : natural (0 to HIDDEN_SIZE - 1) := 0;
+      variable matrix_1_i : natural range 0 to HIDDEN_SIZE - 1 := 0;
+      variable matrix_2_i : natural range 0 to HIDDEN_SIZE - 1 := 0;
 
       variable line_out : line;
     begin

@@ -161,15 +161,16 @@ begin
               write(std_out, string'("    ERROR IS_HIGH_COMPARISON!!!"));
             end if;
 
+            writeline(output, std_out);
 
 
+            -- report "Test passed" severity failure;
             max_test_counter := max_test_counter + 1;
 
             if max_test_counter = 100 then
               exit;
             end if;
 
-            writeline(output, std_out);
           end if;
 
 
