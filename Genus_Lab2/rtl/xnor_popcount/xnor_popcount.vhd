@@ -32,7 +32,7 @@ entity xnor_popcount is
 end xnor_popcount;
 
 architecture Behavioral of xnor_popcount is
-  constant levels : integer := 10;
+  constant levels : integer := 5;
 
   -- type top_array_logic_type is array (0 to N-1) of std_logic;
   -- type top_array_type is array (0 to N-1) of unsigned(0 downto 0);
@@ -72,10 +72,17 @@ architecture Behavioral of xnor_popcount is
   -- signal sum7 : level_7_array_type;
   -- signal sum8 : level_8_array_type;
 
+  type level_1_array_type is array (0 to N/16-1) of integer range 0 to 16;
+  type level_2_array_type is array (0 to N/64-1) of integer range 0 to 64;
+  type level_3_array_type is array (0 to N/256-1) of integer range 0 to 256;
+
+  signal sum1 : level_1_array_type;
+  signal sum2 : level_2_array_type;
+  signal sum3 : level_3_array_type;
 
 
 
-  signal popcount_sum_internal : integer range 0 to 768;
+  -- signal popcount_sum_internal : integer range 0 to 768;
 begin
 
     -- constant top_array = input_input xnor input_weights;
@@ -88,7 +95,7 @@ begin
 
 
 
-    is_sum_high <= '1' when popcount_sum_internal >= 384 else '0';
+    -- is_sum_high <= '1' when popcount_sum_internal >= 384 else '0';
     -- popcount_sum <= to_unsigned(popcount_sum_internal, clog2(N));
 
 
@@ -100,8 +107,8 @@ begin
       -- variable level_2_array_var : level_2_array_type;
       -- variable level_3_array_var : level_3_array_type;
       -- variable final_sum_var : unsigned(10 - 1 downto 0);
-      variable bit_add : integer range 0 to 1 := 0;
-      variable sum : integer range 0 to 768 := 0;
+      -- variable bit_add : integer range 0 to 1 := 0;
+      -- variable sum : integer range 0 to 768 := 0;
 
       -- variable bit_add1 : integer range 0 to 3 := 0;
       -- variable bit_add2 : integer range 0 to 6 := 0;
@@ -121,6 +128,15 @@ begin
       -- variable sum7_var : level_7_array_type;
       -- variable sum8_var : level_8_array_type;
 
+      variable bit_add1 : integer range 0 to 16 := 0;
+      variable bit_add2 : integer range 0 to 64 := 0;
+      variable bit_add3 : integer range 0 to 256 := 0;
+
+      variable sum1_var : level_1_array_type;
+      variable sum2_var : level_2_array_type;
+      variable sum3_var : level_3_array_type;
+      variable end_sum  : integer range 0 to 768 := 0;
+
 
       variable line_out : line;
 
@@ -134,8 +150,8 @@ begin
             -- level_1_array <= (others => (others => '0'));
             -- level_2_array <= (others => (others => '0'));
             -- level_3_array <= (others => (others => '0'));
-            bit_add := 0;
-            sum := 0;
+            -- bit_add := 0;
+            -- sum := 0;
 
             -- sum1 <= (others => 0);
             -- sum2 <= (others => 0);
@@ -189,23 +205,71 @@ begin
             -- popcount_sum_internal <= final_sum_var;
 
             -- alternative direct sum
-            sum := 0;
-            for i in 0 to N-1 loop
-              if top_array(i) = '1' then
-                bit_add := 1;
-              else
-                bit_add := 0;
-              end if;
-              sum := sum + bit_add;
-            end loop;
-            popcount_sum_internal <= sum;
+            -- sum := 0;
+            -- for i in 0 to N-1 loop
+            --   if top_array(i) = '1' then
+            --     bit_add := 1;
+            --   else
+            --     bit_add := 0;
+            --   end if;
+            --   sum := sum + bit_add;
+            -- end loop;
+            -- -- popcount_sum_internal <= sum;
+
+            -- if sum >= 384 then
+            --   is_sum_high <= '1';
+            -- else
+            --   is_sum_high <= '0';
+            -- end if;
 
 
             
-            is_valid <= '1';
+            -- is_valid <= '1';
 
 
 
+            --- try tree 2
+            for i in 0 to N/16-1 loop
+              sum1_var(i) := 0;
+              for j in 0 to 15 loop
+                if top_array(i*16 + j) = '1' then
+                  bit_add1 := 1;
+                else
+                  bit_add1 := 0;
+                end if;
+                sum1_var(i) := sum1_var(i) + bit_add1;
+              end loop;
+              sum1(i) <= sum1_var(i);
+            end loop;
+
+            for i in 0 to N/64-1 loop
+              sum2_var(i) := 0;
+              for j in 0 to 3 loop
+                bit_add2 := sum1(i*4 + j);
+                sum2_var(i) := sum2_var(i) + bit_add2;
+              end loop;
+              sum2(i) <= sum2_var(i);
+            end loop;
+
+            for i in 0 to N/256-1 loop
+              sum3_var(i) := 0;
+              for j in 0 to 3 loop
+                bit_add3 := sum2(i*4 + j);
+                sum3_var(i) := sum3_var(i) + bit_add3;
+              end loop;
+              sum3(i) <= sum3_var(i);
+            end loop;
+
+            end_sum := 0;
+            for j in 0 to 2 loop
+              end_sum := end_sum + sum3(j);
+            end loop;
+
+            if end_sum >= 384 then
+              is_sum_high <= '1';
+            else
+              is_sum_high <= '0';
+            end if;
 
 
             --- try tree
@@ -292,11 +356,11 @@ begin
 
 
 
-            -- if will_be_valid = levels then
-            --   is_valid <= '1';
-            -- else
-            --   will_be_valid := will_be_valid + 1;
-            -- end if;
+            if will_be_valid = levels then
+              is_valid <= '1';
+            else
+              will_be_valid := will_be_valid + 1;
+            end if;
         end if;
       end if;
     end process;
