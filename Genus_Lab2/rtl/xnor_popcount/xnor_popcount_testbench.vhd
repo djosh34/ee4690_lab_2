@@ -23,7 +23,7 @@ architecture testbench of xnor_popcount_testbench is
     signal input_weights : std_logic_vector(0 to N-1) := (others => '0');
 
     signal is_sum_high : std_logic;
-    -- signal popcount_sum : unsigned(clog2(N)-1 downto 0);
+    signal popcount_sum : integer range 0 to N;
 
 
     function log2ceil(val : integer) return integer is
@@ -96,6 +96,7 @@ begin
         variable std_out : line;
 
         variable were_there_errors : boolean := false;
+        variable error_count : integer := 0;
 
         variable max_test_counter : integer := 0;
     begin
@@ -143,14 +144,15 @@ begin
             write(std_out, string'("Expected - Real sum:   "));
             write(std_out, int_to_leading_zeros(expected_sum_vector_row, 4));
             write(std_out, string'(" - "));
-            -- write(std_out, int_to_leading_zeros(to_integer(popcount_sum), 4));
+            -- write(std_out, int_to_leading_zeros(popcount_sum, 4));
             write(std_out, string'("         Expected - Real:   "));
             write(std_out, string'(std_logic_to_boolean_char(expected_is_high)));
             write(std_out, string'(" - "));
             write(std_out, string'(std_logic_to_boolean_char(is_sum_high)));
 
-            -- if expected_sum_vector_row /= to_integer(popcount_sum) then
+            -- if expected_sum_vector_row /= popcount_sum then
             --   were_there_errors := true;
+            --   error_count := error_count + 1;
             --   write(std_out, string'("    ERROR SUM!!!"));
             -- else  
             --   write(std_out, string'("                "));
@@ -158,18 +160,19 @@ begin
 
             if expected_is_high /= is_sum_high then
               were_there_errors := true;
+              error_count := error_count + 1;
               write(std_out, string'("    ERROR IS_HIGH_COMPARISON!!!"));
             end if;
 
             writeline(output, std_out);
 
 
-            -- report "Test passed" severity failure;
             max_test_counter := max_test_counter + 1;
 
-            -- if max_test_counter = 100 then
-            --   exit;
-            -- end if;
+            if error_count >= 1 then
+              report "Test passed" severity failure;
+              exit;
+            end if;
 
           end if;
 
