@@ -54,9 +54,9 @@ begin
             input_input => input_input,
             input_weights => input_weights,
 
-            is_sum_high => is_sum_high
+            is_sum_high => is_sum_high,
 
-            -- popcount_sum => popcount_sum
+            popcount_sum => popcount_sum
         );
 
 
@@ -117,7 +117,6 @@ begin
         read(input_line_row, input_vector_row);
         input_input <= input_vector_row;
 
-        wait for clk_period;
 
         while not endfile(weights_1_file) loop
 
@@ -144,19 +143,19 @@ begin
             write(std_out, string'("Expected - Real sum:   "));
             write(std_out, int_to_leading_zeros(expected_sum_vector_row, 4));
             write(std_out, string'(" - "));
-            -- write(std_out, int_to_leading_zeros(popcount_sum, 4));
+            write(std_out, int_to_leading_zeros(popcount_sum, 4));
             write(std_out, string'("         Expected - Real:   "));
             write(std_out, string'(std_logic_to_boolean_char(expected_is_high)));
             write(std_out, string'(" - "));
             write(std_out, string'(std_logic_to_boolean_char(is_sum_high)));
 
-            -- if expected_sum_vector_row /= popcount_sum then
-            --   were_there_errors := true;
-            --   error_count := error_count + 1;
-            --   write(std_out, string'("    ERROR SUM!!!"));
-            -- else  
-            --   write(std_out, string'("                "));
-            -- end if;
+            if expected_sum_vector_row /= popcount_sum then
+              were_there_errors := true;
+              error_count := error_count + 1;
+              write(std_out, string'("    ERROR SUM!!!"));
+            else  
+              write(std_out, string'("                "));
+            end if;
 
             if expected_is_high /= is_sum_high then
               were_there_errors := true;
