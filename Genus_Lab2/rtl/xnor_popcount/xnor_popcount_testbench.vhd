@@ -23,7 +23,7 @@ architecture testbench of xnor_popcount_testbench is
     signal input_weights : std_logic_vector(0 to N-1) := (others => '0');
 
     signal is_sum_high : std_logic;
-    signal popcount_sum : unsigned(clog2(N)-1 downto 0);
+    -- signal popcount_sum : unsigned(clog2(N)-1 downto 0);
 
 
     function log2ceil(val : integer) return integer is
@@ -54,9 +54,9 @@ begin
             input_input => input_input,
             input_weights => input_weights,
 
-            is_sum_high => is_sum_high,
+            is_sum_high => is_sum_high
 
-            popcount_sum => popcount_sum
+            -- popcount_sum => popcount_sum
         );
 
 
@@ -143,18 +143,18 @@ begin
             write(std_out, string'("Expected - Real sum:   "));
             write(std_out, int_to_leading_zeros(expected_sum_vector_row, 4));
             write(std_out, string'(" - "));
-            write(std_out, int_to_leading_zeros(to_integer(popcount_sum), 4));
+            -- write(std_out, int_to_leading_zeros(to_integer(popcount_sum), 4));
             write(std_out, string'("         Expected - Real:   "));
             write(std_out, string'(std_logic_to_boolean_char(expected_is_high)));
             write(std_out, string'(" - "));
             write(std_out, string'(std_logic_to_boolean_char(is_sum_high)));
 
-            if expected_sum_vector_row /= to_integer(popcount_sum) then
-              were_there_errors := true;
-              write(std_out, string'("    ERROR SUM!!!"));
-            else  
-              write(std_out, string'("                "));
-            end if;
+            -- if expected_sum_vector_row /= to_integer(popcount_sum) then
+            --   were_there_errors := true;
+            --   write(std_out, string'("    ERROR SUM!!!"));
+            -- else  
+            --   write(std_out, string'("                "));
+            -- end if;
 
             if expected_is_high /= is_sum_high then
               were_there_errors := true;
@@ -167,9 +167,9 @@ begin
             -- report "Test passed" severity failure;
             max_test_counter := max_test_counter + 1;
 
-            if max_test_counter = 100 then
-              exit;
-            end if;
+            -- if max_test_counter = 100 then
+            --   exit;
+            -- end if;
 
           end if;
 
