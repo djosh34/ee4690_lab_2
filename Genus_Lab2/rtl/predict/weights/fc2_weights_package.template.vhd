@@ -22,7 +22,6 @@ package body fc2_weights_package is
     function read_and_populate_weights_2 return weights_2_type is
       variable weights_array : weights_2_type;
 
-      variable i : integer := 0;
     begin
 
       -- weights array: 1024 x 768 
