@@ -80,7 +80,12 @@ begin
         variable were_there_errors : boolean := false;
         variable error_counter : integer := 0;
     begin
+        rst <= '1';
         wait for 20 ns;
+        wait for 20 ns;
+        wait for 20 ns;
+        wait for 20 ns;
+        rst <= '0';
 
 
 	-- - [ ] testbench
@@ -118,6 +123,8 @@ begin
             starting_cycles := cycle_counter;
 
             rst <= '0';
+            -- write(line_out, string'(" reset back to 0"));
+            -- writeline(output, line_out);
             wait for 20 ns;
 
 
@@ -144,6 +151,8 @@ begin
                     writeline(output, line_out);
                     were_there_errors := true;
                     error_counter := error_counter + 1;
+                    exit;
+
                 end if;
             end loop;
 
@@ -155,8 +164,11 @@ begin
 
             i_loop_stopper := i_loop_stopper + 1;
 
+            -- if error_counter > 0 then
+            --     report "Error in output" severity failure;
+            -- end if;
 
-            wait for 20 ns;
+
         end loop;
 
         --     wait for 20 ns;

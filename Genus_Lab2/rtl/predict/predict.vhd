@@ -43,7 +43,8 @@ architecture Behavioral of predict is
 
     signal is_valid : std_logic;
     signal is_sum_high : std_logic;
-    signal popcount_sum : unsigned(9 downto 0);
+    signal current_input_bit : std_logic;
+    signal popcount_sum : integer range 0 to INPUT_SIZE;
 
     signal current_2_input_bit : std_logic;
     signal matrix_2_output_enable : std_logic;
@@ -84,7 +85,7 @@ begin
             enable => is_valid,
 
             current_weights_row => current_weights_2_row,
-            current_input_bit => is_sum_high,
+            current_input_bit => current_input_bit,
 
             prediction => output_row,
             done => done
@@ -123,14 +124,14 @@ begin
               -- write(line_out, string'(" is_sum_high: "));
               -- write(line_out, is_sum_high);
 
-              -- write(line_out, string'(" current_2_input_bit: "));
-              -- write(line_out, current_2_input_bit);
+              -- -- write(line_out, string'(" current_2_input_bit: "));
+              -- -- write(line_out, current_2_input_bit);
 
               -- write(line_out, string'(" current_weights_2_row: "));
               -- write(line_out, current_weights_2_row);
 
               -- write(line_out, string'(" popcount_sum: "));
-              -- write(line_out, int_to_leading_zeros(to_integer(popcount_sum), 4));
+              -- write(line_out, int_to_leading_zeros(popcount_sum, 4));
 
               -- writeline(output, line_out);
 
@@ -138,6 +139,8 @@ begin
 
               current_weights_1_row <= weights_1(matrix_1_i);
               current_weights_2_row <= weights_2(matrix_2_i);
+
+              current_input_bit <= is_sum_high;
 
 
               if matrix_1_i < HIDDEN_SIZE - 1 then

@@ -37,7 +37,7 @@ architecture Behavioral of xnor_popcount is
   constant bit_width_3 : integer := 384;
 
   -- constant levels : integer := N/bit_width + 1;
-  constant levels : integer := 3;
+  constant levels : integer := 4;
 
   signal top_array : std_logic_vector(0 to N-1);
 
@@ -77,6 +77,7 @@ begin
           if rst = '1' then
 
             is_valid <= '0';
+            will_be_valid := 0;
 
           else
             if enable = '1' then
