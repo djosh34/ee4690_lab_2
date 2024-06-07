@@ -40,7 +40,7 @@ read_hdl -vhd "./rtl/predict/predict_package.vhd"
 read_hdl -vhd "./rtl/lfsr_10/lfsr_10.vhd"
 read_hdl -vhd "./rtl/matrix_2_output/matrix_2_output.vhd"
 read_hdl -vhd "./rtl/xnor_popcount/xnor_popcount.vhd"
-read_hdl -vhd "./rtl/predict/predict.vhd"
+# read_hdl -vhd "./rtl/predict/predict.vhd"
 
 
 # elaborate lfsr_10 
