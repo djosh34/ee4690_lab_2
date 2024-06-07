@@ -56,7 +56,36 @@ read_sdc ./timing.sdc
 
 #---- Perform synthesis ------------------#
 # set_attribute syn_global_effort high 
-set_attribute syn_global_effort none 
+set_attribute syn_global_effort high 
+
+
+# Enable retiming (improves clock frequency)
+set_attribute syn_retiming true
+
+# Enable register replication for timing improvement
+set_attribute syn_register_replication true
+
+# Enable wireload model optimization (if not using detailed wire delay models)
+set_attribute syn_wireload_mode high
+
+# Enable multi-Vt optimization (if using multi-Vt libraries)
+set_attribute syn_use_multi_vt true
+
+# Specify timing-driven synthesis
+set_attribute syn_timing_driven true
+
+# Set specific timing constraints from timing.sdc
+set_attribute syn_max_path 10
+
+# Set timing derate factors based on input and output delays
+set_timing_derate -early 0.95
+set_timing_derate -late 1.05
+
+# Enable maximum fanout optimization
+set_attribute syn_max_fanout 5
+
+
+
 # technology independent RTL optimiztion e.g. dead code removal
 syn_gen
 # map generic gates to gates from the chosen target technology library
