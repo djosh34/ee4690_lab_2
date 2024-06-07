@@ -79,7 +79,7 @@ architecture Behavioral of xnor_popcount is
 
   -- signal sum0 : level_0_array_type;
   -- signal sum1 : level_1_array_type;
-  signal sum2 : level_2_array_type;
+  signal sum2 : level_1_array_type;
   signal sum3 : level_3_array_type;
 
 
