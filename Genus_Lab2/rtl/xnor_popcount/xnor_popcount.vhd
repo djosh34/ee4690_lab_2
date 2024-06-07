@@ -32,7 +32,7 @@ entity xnor_popcount is
 end xnor_popcount;
 
 architecture Behavioral of xnor_popcount is
-  constant bit_width : integer := 96;
+  constant bit_width : integer := 128;
   -- constant levels : integer := N/bit_width + 1;
   constant levels : integer := 1;
 
