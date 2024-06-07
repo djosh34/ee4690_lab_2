@@ -35,12 +35,16 @@ end matrix_2_output;
 
 architecture Behavioral of matrix_2_output is
 
-  type output_accumulator_array is array(0 to OUTPUT_DIM - 1) of std_logic_vector(10 downto 0);
-  signal output_accumulator : output_accumulator_array := (others => (others => '0'));
-  signal enable_accumulator_array : std_logic_vector(0 to OUTPUT_DIM - 1) := (others => '0');
+  -- type output_accumulator_array is array(0 to OUTPUT_DIM - 1) of std_logic_vector(10 downto 0);
+  -- signal output_accumulator : output_accumulator_array := (others => (others => '0'));
+  -- signal enable_accumulator_array : std_logic_vector(0 to OUTPUT_DIM - 1) := (others => '0');
 
-  signal highest_counter : std_logic_vector(10 downto 0) := (others => '0');
-  signal enable_highest  : std_logic;
+  -- signal highest_counter : std_logic_vector(10 downto 0) := (others => '0');
+  -- signal enable_highest  : std_logic;
+
+  type output_accumulator_array is array(0 to OUTPUT_DIM - 1) of integer range 0 to 1024;
+  signal output_accumulator : output_accumulator_array := (others => 0);
+  signal highest_counter : integer range 0 to 1024 := 0;
 
   signal equal_to_highest : std_logic_vector(0 to OUTPUT_DIM - 1) := (others => '0');
 
@@ -56,33 +60,33 @@ begin
 
 
   -- counter generate
-  counter_generate: for i in 0 to OUTPUT_DIM - 1 generate
-    counter_generate_item: entity work.lfsr_10
-      port map (
-        clk => CLK,
-        rst => rst,
-        enable => enable_accumulator_array(i),
-        lfsr_output => output_accumulator(i)
-      );
+  -- counter_generate: for i in 0 to OUTPUT_DIM - 1 generate
+  --   counter_generate_item: entity work.lfsr_10
+  --     port map (
+  --       clk => CLK,
+  --       rst => rst,
+  --       enable => enable_accumulator_array(i),
+  --       lfsr_output => output_accumulator(i)
+  --     );
 
-  end generate;
+  -- end generate;
 
-  highest_counter_unit: entity work.lfsr_10
-    port map (
-      clk => CLK,
-      rst => rst,
-      enable => enable_highest,
-      lfsr_output => highest_counter
-    );
+  -- highest_counter_unit: entity work.lfsr_10
+  --   port map (
+  --     clk => CLK,
+  --     rst => rst,
+  --     enable => enable_highest,
+  --     lfsr_output => highest_counter
+  --   );
 
-  enable_highest <= or_reduce(equal_to_highest and enable_accumulator_array);
+  -- enable_highest <= or_reduce(equal_to_highest and enable_accumulator_array);
   prediction <= equal_to_highest;
 
 
 
   process(clk, rst)
     variable should_increment_logic : std_logic;
-    variable should_increment_vector : std_logic_vector(0 to OUTPUT_DIM - 1) := (others => '0');
+    -- variable should_increment_vector : std_logic_vector(0 to OUTPUT_DIM - 1) := (others => '0');
 
     variable hidden_dim_counter : integer range 0 to HIDDEN_DIM := 0;
 
@@ -127,10 +131,19 @@ begin
 
       for i in 0 to OUTPUT_DIM - 1 loop
         should_increment_logic := current_weights_row(i) xnor current_input_bit;
-        should_increment_vector(i) := should_increment_logic;
+
+        if should_increment_logic = '1' then
+          output_accumulator(i) := output_accumulator(i) + 1;
+        end if;
+
+        if should_increment_logic = '1' and output_accumulator(i) = highest_counter then
+          highest_counter <= highest_counter + 1;
+        end if;
+
+        -- should_increment_vector(i) := should_increment_logic;
       end loop;
 
-      enable_accumulator_array <= should_increment_vector;
+      -- enable_accumulator_array <= should_increment_vector;
 
       if hidden_dim_counter = HIDDEN_DIM then
         done <= '1';
