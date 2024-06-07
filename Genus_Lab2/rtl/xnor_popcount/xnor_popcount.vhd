@@ -208,7 +208,11 @@ begin
             for i in 0 to N/3-1 loop
               sum1_var(i) := 0;
               for j in 0 to 2 loop
-                bit_add1 := 1 when top_array(i*3 + j) = '1' else 0;
+                if top_array(i*3 + j) = '1' then
+                  bit_add1 := 1;
+                else
+                  bit_add1 := 0;
+                end if;
                 sum1_var(i) := sum1_var(i) + bit_add1;
               end loop;
               sum1(i) <= sum1_var(i);
