@@ -84,7 +84,7 @@ begin
     variable should_increment_logic : std_logic;
     variable should_increment_vector : std_logic_vector(0 to OUTPUT_DIM - 1) := (others => '0');
 
-    variable hidden_dim_counter : natural range (0 to HIDDEN_DIM) := 0;
+    variable hidden_dim_counter : integer range 0 to HIDDEN_DIM := 0;
 
     variable line_out : line;
   begin
