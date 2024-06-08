@@ -1,20 +1,55 @@
-\documentclass[conference,a4paper,flushend]{cs-techrep}
+% -- just a two column document
+\documentclass[conference]{IEEEtran}
 
-\usepackage{todonotes}
+% \usepackage{todonotes}
 % \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{algorithmic}
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
+\usepackage{biblatex}
+\usepackage{ifthen}
+\usepackage{etoolbox}
+% \maxdeadcycles=200
 
 \addbibresource{ref.bib}
 
+% Package to count todos
 
-\title{Hardware Implementation of MNIST digit recognizer using Binary Neural Networks
+% Counter for todos
+\newcounter{todocount}
+\setcounter{todocount}{0}
 
-
+% \todo command
+\newcommand{\todo}[1]{
+  \stepcounter{todocount}
 }
+
+% Display todo count
+\newcommand{\showtodocount}{%
+  \ifthenelse{\value{todocount}=0}{%
+    % No todos
+    \section*{Todo List}
+    No todos.
+  }{%
+    % Todos found
+    \section*{Todo List}
+    Total todos: \arabic{todocount}.
+  }
+}
+
+
+
+
+
+
+
+\title{Hardware Implementation of MNIST digit recognizer using Binary Neural Networks}
+
+
+
+
 
 \author{
 \IEEEauthorblockN{Joshua Azimullah}
@@ -67,7 +102,7 @@ In BNNs, matrix multiplication involving binary weights and activations can be e
 
 \todo{these refs}
 \todo{ref other section}
-This equivalence has been detailed in various studies \cite{placeholder_ref1, placeholder_ref2}, highlighting the advantages of BNNs for high-speed and energy-efficient computations in specialized hardware.
+This equivalence has been detailed in various studies \cite{placeholder1, placeholder2}, highlighting the advantages of BNNs for high-speed and energy-efficient computations in specialized hardware.
 
 
 
@@ -106,9 +141,10 @@ The architecture of our final network is as follows:
 \subsection{Actual hardware network architecture}
 \todo{add in actual hardware architecture}
 \todo{image}
-\todo{xnor_popcount}
-\todo{matrix_2}
+\todo{xnor\_popcount}
+\todo{matrix\_2}
 \todo{memory}
+
 
 \section{Implementation of BNN architecture}
 \subsection{Software implementation}
@@ -122,7 +158,7 @@ Parallel evaluations using NumPy, simulating the potential BNN's performance, in
 \subsection{Hardware implementation}
 
 \todo{section on hardware architecture}
-\todo{ref to appendix label:xnor_maths}
+\todo{ref to appendix label:xnor\_maths}
 \todo{csa adder tree popcount}
 \todo{matrix2 counter network:}
 \todo{approach 10 counters and finding highest using tree compare}
@@ -230,6 +266,7 @@ To further optimize the input dimensions, we reduced the number of inputs from 7
 \todo{future work}
 \todo{subsection better memory library}
 \todo{subsection other problems}
+\todo{subsection double is done}
 
 
 
@@ -341,9 +378,11 @@ In Figure \ref{fig:dot_product_activation}, Equation \ref{eq:dot_product_sum} su
 
 
 
+\printbibliography
 
+  \showtodocount
 
-
+\newpage
 
 \end{document}
 

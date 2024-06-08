@@ -1,4 +1,7 @@
 
+# pptx files don't save the ones that start with ~$
+
+~$*.pptx
 
 main.*
 !main.tex

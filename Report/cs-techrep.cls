@@ -2,14 +2,9 @@
 %# Copyright (c) 2018-2021 Oliver Kopp
 %# Reference: https://latextemplates.github.io/
 
-% !TeX spellcheck = en-US
-% LTeX: language=en-US
-% !TeX encoding = utf8
-% !TeX program = pdflatex
-% !BIB program = biblatex / biber
 
 % Declare that this document class file requires at least LaTeX version 2e.
-\NeedsTeXFormat{LaTeX2e}
+% \NeedsTeXFormat{LaTeX2e}
 
 % Provide the name of your document class, the date it was last updated, and a comment about what it's used for
 \ProvidesClass{cs-techrep}[2024/04/10 Technical Reports in Computer Science and Software Engineering v0.2]
