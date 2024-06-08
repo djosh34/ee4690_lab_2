@@ -11,6 +11,7 @@
 \usepackage{biblatex}
 \usepackage{ifthen}
 \usepackage{etoolbox}
+\usepackage{hyperref}
 % \maxdeadcycles=200
 
 \addbibresource{ref.bib}
@@ -121,29 +122,22 @@ It covers both training and inference phases, providing a complete view of the B
 
 \section{Overview of BNN Architecture}
 
-\subsection{Software network architecture}
-\todo{change software such that it shows how in training}
-\todo{ref to why 768 and not 784}
-The architecture of our final network is as follows:
+\subsection{Training Architecture}
+Section \autoref{ref:why_768} provides a rationale for choosing 768 input values over 784, demonstrating superior performance in our specific context.
+
+The architecture of our training network is outlined as follows:
 \begin{itemize}
-    \item The input vector consists of 768 1-bit values (\(\{-1, 1\}\)).
-    \item The first layer performs matrix multiplication with a weight matrix of dimensions \(1024 \times 768\).
-    \item A hard activation function is applied, producing output values in \(\{-1, 1\}\).
-    \item The second layer involves matrix multiplication with a weight matrix of dimensions \(10 \times 1024\).
-    \item The output vector contains 10 sums.
-    \item The highest sum is selected as the prediction.
+    \item The input vector consists of 768 values, each either -1 or 1.
+    \item The first layer performs a matrix multiplication using a weight matrix of size \(1024 \times 768\).
+    \item A hardtanh activation function is applied, resulting in output values constrained within the range \(\{-1, 1\}\).
+    \item The second layer performs a matrix multiplication with a weight matrix of size \(10 \times 1024\).
+    \item The resulting output vector comprises 10 summed values.
+    \item The maximum value among these 10 sums is selected as the prediction.
 \end{itemize}
 
-\subsection{Mathmatical hardware network architecture}
-\todo{add in mathmatical hardware architecture}
-\todo{add in caption to hardware saying that this is how it is mathtematically}
+\subsection{Inference Network Architecture}
+The inference network shares the same mathematical structure as the training network. The primary difference lies in the activation function: the inference network employs a hard activation to constrain outputs strictly to -1 and 1.
 
-\subsection{Actual hardware network architecture}
-\todo{add in actual hardware architecture}
-\todo{image}
-\todo{xnor\_popcount}
-\todo{matrix\_2}
-\todo{memory}
 
 
 \section{Implementation of BNN architecture}
@@ -157,29 +151,136 @@ Parallel evaluations using NumPy, simulating the potential BNN's performance, in
 
 \subsection{Hardware implementation}
 
-\todo{section on hardware architecture}
-\todo{ref to appendix label:xnor\_maths}
-\todo{csa adder tree popcount}
-\todo{matrix2 counter network:}
-\todo{approach 10 counters and finding highest using tree compare}
+% \todo{add in actual hardware architecture}
+% \todo{image}
+% \todo{xnor\_popcount}
+% \todo{matrix\_2}
+% \todo{memory}
+% insert images here that show the hardware architecture of the xnor popcount and matrix 2
+% first figure overview.pdf
+% next figure Xnor_popcount.pdf
+% next figure majority_classifier.pdf
+
+% \todo{section on hardware architecture}
+% \todo{ref to appendix label:xnor\_maths}
+% \todo{csa adder tree popcount}
+% \todo{matrix2 counter network:}
+% \todo{approach 10 counters and finding highest using tree compare}
+
+% \subsection{Hardware implementation}
+% Figrue \ref{fig:overview} shows the overall hardware architecture of the BNN.
+
+
+% The XNOR Popcount Evaluator, shown in Figure \ref{fig:xnor_popcount}, represents the first matrix multiplication and the hard activation after.
+% The Majority Classifier, shown in Figure \ref{fig:majority_classifier} represents the second matrix multiplication and the final determining of the output prediction by choosing the highest sum
+
+% each clock cycle both a row of the first matrix multiplication in xnorpopcount and a column of the second matrix in majority classifier are processed in parallel. The bottleneck in this process is the xnorpopcount so it doesn't make sense to do the second matrix faster. the second matrix is in hardware done by just 
+% each cycle the xnor popcount decides if the (with matrix 1 row xnorred) vector has a popcount greater than or equal to 384, then this bit is used, in the majority classifier, to xnor with the matrix 2 weight column which produces a 10 bit vector. inside the majority classfier each bit that is 1 their respective counter will increase. the prediction result is a 10 bit vector which is all 0 excpet 1 on the place of the respective counter which is the highest of all
+
+
+
+% in the beginning on reset both the matrix\_1 and matrix\_2 counts are reset to 0
+
+% the matrix\_1 and 2 counts, shown in overview, are used to specify the current row in the matrix 1 and 2 register files.
+% matrix 1 count is always increased each clock cycle until it reaches the end of the register file, 
+
+% The XNOR popcoutne evaluator takes as input both the input vector and the current weights\_1 row. these togheter are xnorred and popcounted which is the same as a dot product shown in \ref{appendix:bnn_maths}, this evaluator outputs 1 bit : is this sum is greater than or equal to 384. also it outputs an is valid bit that start with 0 which is just a lfsr counter that can count until n, if it is n it will always output 1. given the optimization described in \ref{ref:pipeline_popcount}, the popcount sum is not always valid, but will be valid after n cycles depending on the optimization.
+
+% next the majority classifier which will enable if the is valid is set. also if is valid is set the matrix 2 count will increase after a cycle, this means that majority classifier matrix 2 count lags behind the xnor popcount matrix 1 count by the number of cycles it takes for the xnor popcount to set the is valid high after a reset
+% no additional enable is needed as a rst to 0 means that the device start predicting
+% the majority classifier (not shown on the image) also holds a count (which is just the same as matrix 2 count) and if that count is equal to the hidden size, the done flag is set high and the device has finished it's prediction
+
+% \subsection{Hardware Implementation}
+
+\autoref{fig:overview} shows the hardware architecture of the Binary Neural Network (BNN). 
+
+The XNOR Popcount Evaluator (\autoref{fig:xnor_popcount}) performs the first matrix multiplication and activation by XNORing and popcounting the input vector with the current row of weights. It outputs a bit indicating if the sum is $\geq 384$. The Majority Classifier (\autoref{fig:majority_classifier}) conducts the second matrix multiplication, determining the output by choosing the highest sum among the columns.
+
+In each clock cycle, a row from the first matrix (XNOR Popcount) and a column from the second matrix (Majority Classifier) are processed in parallel. The XNOR Popcount Evaluator is the bottleneck, so the second matrix operation isn't accelerated. 
+
+On reset, both matrix\_1 and matrix\_2 counters reset to 0. These counters, as shown in \autoref{fig:overview}, select the current row and column in the respective matrix register files. The matrix\_1 counter increments each cycle until it completes the register file. 
+
+The XNOR Popcount Evaluator takes the input vector and the current row from weights\_1, XNORs them, and popcounts the result, outputting a bit if the sum $\geq 384$. It also produces a validity bit, initially set low, which counts to a specific count $n$ using an LFSR counter, after which it is set high. This bit is set after $n$ cycles based on the optimization in Section \ref{ref:pipeline_popcount}.
+
+The Majority Classifier activates if the validity bit is set. Upon activation, it increments the matrix\_2 counter after each cycle, resulting in a delay behind the matrix\_1 counter by $n$. No additional enable signal is needed; a reset to 0 starts the prediction process directly. The Majority Classifier also holds a count equivalent to the matrix\_2 count, and when this count equals the hidden size $1024$, the done flag is set high, signaling prediction completion.
+
+
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.4\textwidth]{overview.pdf}
+    \caption{Overview of the hardware architecture.}
+    \label{fig:overview}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.4\textwidth]{Xnor_popcount.pdf}
+    \caption{XNOR Popcount Evaluator.}
+    \label{fig:xnor_popcount}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.4\textwidth]{majority_classifier.pdf}
+    \caption{Majority Classifier.}
+    \label{fig:majority_classifier}
+\end{figure}
+
+
+
+
+
+% \subsection{Optimizations}
+% \subsubsection{Pipelining popcount}
+% \label{ref:pipeline_popcount}
+% the popcount could of course be done within one clock cycle using a large csa network, but in Section \ref{ref:exploration_pipelining} we did an exploration of different number of pipelined registers in between the adder network. From that 4 levels was chosen as the best number of levels, there for only after $n=4$ cycles the popcount sum is the actual sum, after which each cycle a new valid sum is produced. 
+
+% \subsubsection{Majority classifier only LFSR counters}
+% while at first we did a counter for each digit to be classified and later comparing those counts in a tree structure to show which one is highest. it isn't actually necessary to have this tree after if the "highest count" is kept during counting. This highest counter is connected to all other counters showing if it is equal to the highest. if some counter will increase AND it is equal to the highest counter, the highest counter will increase as well.
+
+% Now since the counters don't need to actually compare, real counts don't need to be kept: this opens up the possibility to replace all counters with an lfsr counter instead providing the same function
+
 
 \subsection{Optimizations}
-\todo{Pipelining popcount}
-\todo{exploration different number of levels and bitwidths -> show in results}
+\subsubsection{Pipelining Popcount}
+\label{ref:pipeline_popcount}
 
-\todo{subsubsection better approach using lfsr counters + 1 highest counter, which can be done since the real count doesn't need to be known. Just which one is highest}
+Instead of performing the popcount in a single clock cycle using a large Carry-Save Adder (CSA) network, our exploration in \autoref{ref:exploration_pipelining} determined that a pipelined approach with four registers between the adder stages is optimal. Thus, the popcount result becomes valid after $n=4$ cycles, with subsequent cycles producing new valid sums.
+
+\subsubsection{LFSR-Based Majority Classifier}
+
+Initially, individual counters for each digit were used, along with a tree structure to identify the highest count. However, this structure is redundant if the highest count is tracked dynamically. Each counter is compared against the current highest count. If a counter matches the highest count and is to be incremented, the highest count is updated accordingly. This update is achieved by performing a bitwise AND operation between a 10-bit vector indicating counters equal to the highest count and a 10-bit vector indicating counters to be incremented. An OR reduction of this resultant vector determines if the highest count should increase. 
+Ultimately, this approach allows the additional optimization of replacing normal counters with Linear Feedback Shift Register (LFSR) counters, which provide equivalent functionality using less area.
+
+
+
+
+
+
+
 
 \section{Results}
 
-\subsection{Simulation setup}
-\todo{section on testing methodology}
-\todo{split into three parts}
+% \todo{section on testing methodology}
+% \todo{split into three parts}
 
-\todo{testing individual parts using fake generated data}
+% \todo{testing individual parts using fake generated data}
 
-\todo{subsection testing using ghdl technology for rapid iteration}
+% \todo{subsection testing using ghdl technology for rapid iteration}
 
-\todo{final testing whole network using all 10.000 test images}
+% \todo{final testing whole network using all 10.000 test images}
+\subsection{Simulation Setup}
+
+The initial model, developed in PyTorch, was translated into raw NumPy operations using values of 1 and -1. Upon validation, the NumPy implementation was segmented into the XNOR Popcount and Majority Classifier components.
+
+This segmentation allowed the generation of random test data for both components, output as binary text files containing 0s and 1s. These text files served as inputs for testbenches to validate the functionality of each component individually.
+
+Additionally, text files for input vectors and corresponding labels were generated using the same method. This enabled testing the entire 10,000-image MNIST testset to verify the device's operation.
+
+Simulations were executed using GHDL to accelerate the simulation process and facilitate rapid testing iterations.
+
 
 
 \subsection{Demonstration}
@@ -216,6 +317,7 @@ Parallel evaluations using NumPy, simulating the potential BNN's performance, in
 	% - [ ] full design
 	% 	- [ ] note on how memory is most of the area
 \subsubsection{XNOR popcount}
+\label{ref:exploration_pipelining}
 \todo{Explanation of results:}
 \todo{0 levels and 1 levels a wide number of valid divisors of 768 were tested and shown her}
 \todo{2 and 3 levels have too large exploration space thus first a reasonable setup was chosen and then for each additional test, only the part where the lowest slack was changed}
@@ -247,6 +349,7 @@ Subsequent experiments with two matrices in the network structure suggested that
 \todo{lower input size also}
 
 
+\label{ref:why_768}
 To further optimize the input dimensions, we reduced the number of inputs from 784 to 768 by dropping the last 16 inputs. This simplification leverages the powers of two, specifically \(768 = 512 + 256 = 2^9 + 2^8\), which can simplify the hardware and align more efficiently with binary operations. This reduction did not impact performance.
 
 
@@ -273,6 +376,8 @@ To further optimize the input dimensions, we reduced the number of inputs from 7
 \appendix
 
 \section{Mathematical Foundations for Hardware Implementations}
+
+\label{appendix:bnn_maths}
 
 \subsection{First matrix multiplication with activation}
 
