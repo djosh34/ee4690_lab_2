@@ -14,6 +14,14 @@
 \usepackage{hyperref}
 % \maxdeadcycles=200
 
+
+% Package for better math typesetting
+\usepackage{amsmath}
+
+% Package for custom lists
+\usepackage{enumitem}
+
+
 \addbibresource{ref.bib}
 
 % Package to count todos
@@ -88,14 +96,11 @@ ikarydis@tudelft.nl}
 \subsection{Basic Theory of Binary Neural Networks}
 
 
-\todo{rewrite this academically}
-BNN are the ultimate quantization method for neural networks. There is no way of quantizing a weight to lower than 1-bit. Quantizing to 1-bit opens up a unique new way of computation, since instead of any other number of bits representation, 1-bit multiplicaiton with 1-bit produces only 1 bit. Therefore a multiplicaiton can be modelled as a truth table. This opens the possibility of many hardware efficiency improvements over traditional quantized and floating-point neural nets.
+\todo{rewrite this academically -> Binary Neural Networks (BNNs) are an advanced quantization method for neural networks that offers a unique approach to computation. By quantizing weights to 1-bit, BNNs streamline the multiplication process to produce more efficient results. This innovative method allows for hardware efficiency improvements when compared to traditional quantized and floating-point neural networks.}
+Binary Neural Networks (BNNs) are the ultimate quantization method for neural networks. There is no way of quantizing a weight to lower than 1-bit. Quantizing to 1-bit opens up a unique new way of computation, since instead of any other number of bits representation, 1-bit multiplication with 1-bit produces only 1 bit. Therefore a multiplication can be modelled as a truth table. This opens the possibility of many hardware efficiency improvements over traditional quantized and floating-point neural nets.
 
 
-Overall, BNNs offer a promising approach to developing efficient and high-performance neural networks suitable for a wide range of practical applications.
-
-
-Binary Neural Networks (BNNs) represent a class of neural networks where weights and activations are constrained to binary values, typically \(\{-1, 1\}\). This binarization facilitates significant computational efficiency, particularly in hardware implementations.
+Overall, BNNs offer a promising approach to developing efficient and high-performance neural networks suitable for a wide range of practical applications. BNNs represent a class of neural networks where weights and activations are constrained to binary values, typically \(\{-1, 1\}\). This binarization facilitates significant computational efficiency, particularly in hardware implementations.
 
 % \subsection{Equivalence of Matrix Multiplication and XNOR-Popcount Operations}
 
@@ -110,15 +115,68 @@ This equivalence has been detailed in various studies \cite{placeholder1, placeh
 
 \subsection{Contribution \& Scope of the Project}
 
-\todo{Rewrite aim, such that our aim was to first achieve a respectible accuracy of 95\% on the MNIST dataset, and then further improve the design to optimize on area, power and minimum achievable clock speed.}
+\todo{Rewrite aim, such that our aim was to first achieve a respectable accuracy of 95\% on the MNIST dataset, and then further improve the design to optimize on area, power and minimum achievable clock speed.}
 
-\todo{rewrite this part also include: we used mnist dataset (with reference), testset of 10.000 images. }
+\todo{rewrite this part also include: we used MNIST dataset (with reference), testset of 10.000 images. -> Our project began with the ambitious goal of achieving a significant milestone: attaining a respectable accuracy rate of 95\% on the renowned MNIST dataset, consisting of handwritten digits [1](cite the page of yann lecun??). This task was conducted using a test set comprising 10,000 images, providing a rigorous evaluation of our model's performance.
+
+Moving forward, our project expanded its scope to encompass the optimization of key design parameters, namely area, power efficiency, and the minimum achievable clock speed. This optimization phase represents a critical contribution, as it delves into the intricate balance between computational efficiency and performance within our system.
+
+By meticulously fine-tuning these aspects, we aim to not only enhance the overall efficiency of our model but also pave the way for future advancements in machine learning hardware. This holistic approach underscores our commitment to not only achieving high accuracy but also ensuring scalability and practicality in real-world applications.
+
+Furthermore, our project covers both the training and inference phases, providing a comprehensive view of the BNN's practical use and performance. This ensures that our analysis extends beyond mere accuracy metrics, offering insights into the model's effectiveness across various operational contexts.}
 
 It covers both training and inference phases, providing a complete view of the BNN's practical use and performance.
 
 \subsection{Outline}
+\begin{enumerate}[label=\Roman*.]
+    \item INTRODUCTION
+    \begin{enumerate}[label=\Alph*.]
+        \item \textit{Basic Theory of Binary Neural Networks}
+        \item \textit{Contribution \& Scope of the Project}
+        \item \textit{Outline}
+    \end{enumerate}
+    \item OVERVIEW OF BNN ARCHITECTURE
+    \begin{enumerate}[label=\Alph*.]
+        \item \textit{Training Architecture}
+        \item \textit{Inference Network Architecture}
+    \end{enumerate}
+    \item IMPLEMENTATION OF BNN ARCHITECTURE
+        \begin{enumerate}[label=\Alph*.]
+            \item \textit{Software implementation}
+            \item \textit{Hardware implementation}
+            \item \textit{Optimizations}
+            \begin{enumerate}[label=\arabic*.]
+                \item \textit{Pipelining Popcount}
+                \item \textit{LFSR-Based Majority Classifier}
+            \end{enumerate}
+        \end{enumerate}
+    \item RESULTS
+        \begin{enumerate}[label=\Alph*.]
+            \item \textit{Simulation Setup}
+            \item \textit{Demonstration}
+            \item \textit{Design metric results}
+            \item \textit{General design Trade-Off}
+            \item \textit{Hardware Trade-off Results}
+            \begin{enumerate}[label=\arabic*.]
+                \item \textit{Small section that weight memory is most of the area}
+                \item \textit{XNOR popcount}
+                \item \textit{Matrix 2}
+            \end{enumerate}
+            \item \textit{Accuracy Trade-Off}
+        \end{enumerate}
+    \item CONCLUSIONS
+    \begin{description}
+        \item APPENDIX
+            \begin{enumerate}[label=\Alph*.]
+                \item \textit{First matrix multiplication with activation}
+                \item \textit{maths second matrix}
+            \end{enumerate}
+    \end{description}
+\end{enumerate}
 
-\todo{written table of contents for coming sections}
+
+
+\todo{written table of contents for coming sections -> DONE}
 
 \section{Overview of BNN Architecture}
 
@@ -142,7 +200,7 @@ The inference network shares the same mathematical structure as the training net
 
 \section{Implementation of BNN architecture}
 \subsection{Software implementation}
-Our Binary Neural Networks (BNNs) are trained using PyTorch, leveraging the Adam optimizer and CrossEntropy loss function, with one-hot encoded outputs. Prior to training, the input values are rounded to \(\{-1, 1\}\), ensuring the network adapts to these binary inputs. Training is conducted in floating-point representation, with binarization applied post-training.
+Our BNNs are trained using PyTorch, leveraging the Adam optimizer and CrossEntropy loss function, with one-hot encoded outputs. Prior to training, the input values are rounded to \(\{-1, 1\}\), ensuring the network adapts to these binary inputs. Training is conducted in floating-point representation, with binarization applied post-training.
 
 In the MNIST dataset, the 8-bit input values are pre-processed such that values are mapped to $1$ if $\geq 128$, and to $-1$ otherwise. The HardTanh function is used during training to nudge activations towards hard binary values. 
 
@@ -337,7 +395,7 @@ Simulations were executed using GHDL to accelerate the simulation process and fa
 
 \todo{why not CNN decision: would probably require somewhere a linear layer anyways, or a large number of layers vastly reducing speed}
 
-\todo{somewhere needs to be put a better reasoning why 2 matrices are more efficient: either have 1024 counters = excesive or 1024x768 counts which is slow and area gains are low}
+\todo{somewhere needs to be put a better reasoning why 2 matrices are more efficient: either have 1024 counters = excessive or 1024x768 counts which is slow and area gains are low}
 The initial goal of our Binary Neural Network (BNN) architecture was to achieve a high level of performance using a single matrix for computations. However, this approach did not meet the target accuracy of 95\%, necessitating exploration of alternative designs.
 
 
@@ -485,9 +543,10 @@ In Figure \ref{fig:dot_product_activation}, Equation \ref{eq:dot_product_sum} su
 
 \printbibliography
 
-  \showtodocount
+\showtodocount
 
 \newpage
 
 \end{document}
+
 
