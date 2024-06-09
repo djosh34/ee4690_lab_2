@@ -336,6 +336,7 @@ next for optimization sake every interval of 32 was tested in between, \autoref{
   \todo{subsection power}
   \todo{subsection timing}
 
+\todo{Theoritical inference performance}
 
 \subsection{Hardware Trade-off Results}
 
@@ -374,10 +375,12 @@ next for optimization sake every interval of 32 was tested in between, \autoref{
   \todo{subsection power}
   \todo{subsection timing}
 
-\subsubsection{Small section that weight memory is most of the area}
 
 
 
+
+
+\section{Discussion}
 \subsection{Rationale}
 \todo{place on different spot}
 
@@ -386,8 +389,10 @@ next for optimization sake every interval of 32 was tested in between, \autoref{
 \todo{subsubsection strategy do everything in parallel in one tick}
 \todo{subsubsection strategy mixed approach, since parallel would be huge and sequentially would be unneccesary slow for little area and power gains due to weights storage that is mandatory}
 
+\subsubsection{Small section that weight memory is most of the area}
 
-\section{Discussion}
+% \todo{why not CNN decision: would probably require somewhere a linear layer anyways, or a large number of layers vastly reducing speed}
+% \todo{somewhere needs to be put a better reasoning why 2 matrices are more efficient: either have 1024 counters = excessive or 1024x768 counts which is slow and area gains are low}
 \todo{Hyperparameter tuning might be overfitting on the testset}
 
 \section{Conclusions}
@@ -518,5 +523,9 @@ In Figure \ref{fig:dot_product_activation}, Equation \ref{eq:dot_product_sum} su
 \newpage
 
 \end{document}
+
+
+
+
 
 

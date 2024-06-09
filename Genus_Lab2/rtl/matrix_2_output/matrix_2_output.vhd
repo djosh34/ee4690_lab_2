@@ -16,7 +16,7 @@ entity matrix_2_output is
 	-- 	- [ ] prediction out 10 bits
 	-- 	- [ ] done out
     generic (
-        HIDDEN_DIM : integer := 1024;
+        HIDDEN_DIM : integer := 608;
         OUTPUT_DIM : integer := 10
     );
     port (
@@ -42,9 +42,9 @@ architecture Behavioral of matrix_2_output is
   -- signal highest_counter : std_logic_vector(10 downto 0) := (others => '0');
   -- signal enable_highest  : std_logic;
 
-  type output_accumulator_array is array(0 to OUTPUT_DIM - 1) of integer;
+  type output_accumulator_array is array(0 to OUTPUT_DIM - 1) of integer range 0 to HIDDEN_DIM;
   signal output_accumulator : output_accumulator_array := (others => 0);
-  signal highest_counter : integer := 0;
+  signal highest_counter : integer range 0 to HIDDEN_DIM := 0;
 
   signal equal_to_highest : std_logic_vector(0 to OUTPUT_DIM - 1) := (others => '0');
 
@@ -88,7 +88,7 @@ begin
     variable should_increment_logic : std_logic;
     -- variable should_increment_vector : std_logic_vector(0 to OUTPUT_DIM - 1) := (others => '0');
 
-    variable hidden_dim_counter : integer := 0;
+    variable hidden_dim_counter : integer range 0 to HIDDEN_DIM := 0;
 
     variable line_out : line;
   begin

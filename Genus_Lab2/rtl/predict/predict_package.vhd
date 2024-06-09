@@ -25,7 +25,7 @@ package predict_package is
 
 
     constant INPUT_SIZE : integer := 768;
-    constant HIDDEN_SIZE : integer := 1024;
+    constant HIDDEN_SIZE : integer := 608;
     constant OUTPUT_SIZE : integer := 10;
 
 

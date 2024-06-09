@@ -16,7 +16,7 @@ use work.fc2_weights_package.all;
 entity predict is
     generic (
         INPUT_SIZE : integer := 768;
-        HIDDEN_SIZE : integer := 1024;
+        HIDDEN_SIZE : integer := 608;
         OUTPUT_SIZE : integer := 10
     );
     port (

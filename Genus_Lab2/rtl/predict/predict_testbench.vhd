@@ -16,7 +16,7 @@ end predict_testbench;
 architecture testbench of predict_testbench is
 
     constant INPUT_SIZE : integer := 768;
-    constant HIDDEN_SIZE : integer := 1024;
+    constant HIDDEN_SIZE : integer := 608;
     constant OUTPUT_SIZE : integer := 10;
     constant clk_period : time := 20 ns;
 

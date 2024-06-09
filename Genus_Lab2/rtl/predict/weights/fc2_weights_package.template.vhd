@@ -9,7 +9,7 @@ use ieee.std_logic_textio.all;
 
 
 package fc2_weights_package is
-    constant HIDDEN_SIZE : integer := 1024;
+    constant HIDDEN_SIZE : integer := 608;
     constant OUTPUT_SIZE : integer := 10;
 
     type weights_2_type is array(0 to HIDDEN_SIZE - 1) of std_logic_vector(0 to OUTPUT_SIZE - 1);
@@ -24,7 +24,7 @@ package body fc2_weights_package is
 
     begin
 
-      -- weights array: 1024 x 768 
+      -- weights array: 608 x 768 
       -- weights_array(0) := "....";
       $WEIGHTS_ARRAY
 
