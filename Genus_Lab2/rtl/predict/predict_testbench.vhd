@@ -195,9 +195,9 @@ begin
         wait for 20 ns;
 
         write(line_out, string'("Score: "));
-        write(line_out, int_to_leading_zeros(i_loop_stopper - error_counter, 4));
+        write(line_out, i_loop_stopper - error_counter);
         write(line_out, string'(" / "));
-        write(line_out, int_to_leading_zeros(i_loop_stopper, 4));
+        write(line_out, int_to_leading_zeros(i_loop_stopper, 5));
         writeline(output, line_out);
 
 
