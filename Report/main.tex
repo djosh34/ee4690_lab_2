@@ -200,6 +200,8 @@ The inference network shares the same mathematical structure as the training net
 
 \section{Implementation of BNN architecture}
 \subsection{Software implementation}
+\todo{list learning rate, batch size}
+
 Our BNNs are trained using PyTorch, leveraging the Adam optimizer and CrossEntropy loss function, with one-hot encoded outputs. Prior to training, the input values are rounded to \(\{-1, 1\}\), ensuring the network adapts to these binary inputs. Training is conducted in floating-point representation, with binarization applied post-training.
 
 In the MNIST dataset, the 8-bit input values are pre-processed such that values are mapped to $1$ if $\geq 128$, and to $-1$ otherwise. The HardTanh function is used during training to nudge activations towards hard binary values. 
@@ -208,47 +210,6 @@ Parallel evaluations using NumPy, simulating the potential BNN's performance, in
 
 
 \subsection{Hardware implementation}
-
-% \todo{add in actual hardware architecture}
-% \todo{image}
-% \todo{xnor\_popcount}
-% \todo{matrix\_2}
-% \todo{memory}
-% insert images here that show the hardware architecture of the xnor popcount and matrix 2
-% first figure overview.pdf
-% next figure Xnor_popcount.pdf
-% next figure majority_classifier.pdf
-
-% \todo{section on hardware architecture}
-% \todo{ref to appendix label:xnor\_maths}
-% \todo{csa adder tree popcount}
-% \todo{matrix2 counter network:}
-% \todo{approach 10 counters and finding highest using tree compare}
-
-% \subsection{Hardware implementation}
-% Figrue \ref{fig:overview} shows the overall hardware architecture of the BNN.
-
-
-% The XNOR Popcount Evaluator, shown in Figure \ref{fig:xnor_popcount}, represents the first matrix multiplication and the hard activation after.
-% The Majority Classifier, shown in Figure \ref{fig:majority_classifier} represents the second matrix multiplication and the final determining of the output prediction by choosing the highest sum
-
-% each clock cycle both a row of the first matrix multiplication in xnorpopcount and a column of the second matrix in majority classifier are processed in parallel. The bottleneck in this process is the xnorpopcount so it doesn't make sense to do the second matrix faster. the second matrix is in hardware done by just 
-% each cycle the xnor popcount decides if the (with matrix 1 row xnorred) vector has a popcount greater than or equal to 384, then this bit is used, in the majority classifier, to xnor with the matrix 2 weight column which produces a 10 bit vector. inside the majority classfier each bit that is 1 their respective counter will increase. the prediction result is a 10 bit vector which is all 0 excpet 1 on the place of the respective counter which is the highest of all
-
-
-
-% in the beginning on reset both the matrix\_1 and matrix\_2 counts are reset to 0
-
-% the matrix\_1 and 2 counts, shown in overview, are used to specify the current row in the matrix 1 and 2 register files.
-% matrix 1 count is always increased each clock cycle until it reaches the end of the register file, 
-
-% The XNOR popcoutne evaluator takes as input both the input vector and the current weights\_1 row. these togheter are xnorred and popcounted which is the same as a dot product shown in \ref{appendix:bnn_maths}, this evaluator outputs 1 bit : is this sum is greater than or equal to 384. also it outputs an is valid bit that start with 0 which is just a lfsr counter that can count until n, if it is n it will always output 1. given the optimization described in \ref{ref:pipeline_popcount}, the popcount sum is not always valid, but will be valid after n cycles depending on the optimization.
-
-% next the majority classifier which will enable if the is valid is set. also if is valid is set the matrix 2 count will increase after a cycle, this means that majority classifier matrix 2 count lags behind the xnor popcount matrix 1 count by the number of cycles it takes for the xnor popcount to set the is valid high after a reset
-% no additional enable is needed as a rst to 0 means that the device start predicting
-% the majority classifier (not shown on the image) also holds a count (which is just the same as matrix 2 count) and if that count is equal to the hidden size, the done flag is set high and the device has finished it's prediction
-
-% \subsection{Hardware Implementation}
 
 \autoref{fig:overview} shows the hardware architecture of the Binary Neural Network (BNN). 
 
@@ -288,19 +249,6 @@ The Majority Classifier activates if the validity bit is set. Upon activation, i
 
 
 
-
-
-% \subsection{Optimizations}
-% \subsubsection{Pipelining popcount}
-% \label{ref:pipeline_popcount}
-% the popcount could of course be done within one clock cycle using a large csa network, but in Section \ref{ref:exploration_pipelining} we did an exploration of different number of pipelined registers in between the adder network. From that 4 levels was chosen as the best number of levels, there for only after $n=4$ cycles the popcount sum is the actual sum, after which each cycle a new valid sum is produced. 
-
-% \subsubsection{Majority classifier only LFSR counters}
-% while at first we did a counter for each digit to be classified and later comparing those counts in a tree structure to show which one is highest. it isn't actually necessary to have this tree after if the "highest count" is kept during counting. This highest counter is connected to all other counters showing if it is equal to the highest. if some counter will increase AND it is equal to the highest counter, the highest counter will increase as well.
-
-% Now since the counters don't need to actually compare, real counts don't need to be kept: this opens up the possibility to replace all counters with an lfsr counter instead providing the same function
-
-
 \subsection{Optimizations}
 \subsubsection{Pipelining Popcount}
 \label{ref:pipeline_popcount}
@@ -310,25 +258,11 @@ Instead of performing the popcount in a single clock cycle using a large Carry-S
 \subsubsection{LFSR-Based Majority Classifier}
 
 Initially, individual counters for each digit were used, along with a tree structure to identify the highest count. However, this structure is redundant if the highest count is tracked dynamically. Each counter is compared against the current highest count. If a counter matches the highest count and is to be incremented, the highest count is updated accordingly. This update is achieved by performing a bitwise AND operation between a 10-bit vector indicating counters equal to the highest count and a 10-bit vector indicating counters to be incremented. An OR reduction of this resultant vector determines if the highest count should increase. 
-Ultimately, this approach allows the additional optimization of replacing normal counters with Linear Feedback Shift Register (LFSR) counters, which provide equivalent functionality using less area.
-
-
-
-
-
+Ultimately, this approach allows the additional optimization of replacing normal counters with Linear Feedback Shift Register (LFSR) counters, which provide equivalent functionality using less area, as is shown in Section \ref{ref:lfsr_opt}
 
 
 
 \section{Results}
-
-% \todo{section on testing methodology}
-% \todo{split into three parts}
-
-% \todo{testing individual parts using fake generated data}
-
-% \todo{subsection testing using ghdl technology for rapid iteration}
-
-% \todo{final testing whole network using all 10.000 test images}
 \subsection{Simulation Setup}
 
 The initial model, developed in PyTorch, was translated into raw NumPy operations using values of 1 and -1. Upon validation, the NumPy implementation was segmented into the XNOR Popcount and Majority Classifier components.
@@ -346,79 +280,115 @@ Simulations were executed using GHDL to accelerate the simulation process and fa
 
 
 
-\subsection{Design metric results}
 
-\todo{subsection accuracy}
-\todo{subsection area}
-    \todo{XNOR Popcount Evaluator}
-    \todo{Majority Classifier}
-    \todo{memory}
-\todo{subsection power}
-    \todo{XNOR Popcount Evaluator}
-    \todo{Majority Classifier}
-    \todo{memory}
-\todo{subsection timing}
-    \todo{XNOR Popcount Evaluator}
-    \todo{Majority Classifier}
-    \todo{memory}
+\subsection{Accuracy Metrics}
 
-\subsection{General design Trade-Off}
+\subsubsection{Hidden size Optimization}
+
+since our bnn device uses a sequential method for processing the hidden layer, the hidden size can be precisely adjusted to get the best hidden size for a given accuracy.
+Increasing the hidden size both increases the number of clock cycles:  clock cycles inference = hidden size + delay caused by xnor popcount evaluator. where hidden size >> delay cycles>
+Furthermore storing the weights as is discussed in Section \ref{ref:overall_minus_rest}, is the largest contributer for area, power and timing. and the hidden size both affects the matrix 1 and 2 linearly in terms of number of bits needed to store.
+
+Therefore any decrease in hidden size causes a big win in terms of performance on all metrics except accuracy.
+we first did a overview hidden size exploration to get to the 95\% target first.
+
+At first a global overview was done with the hidden sizes of powers of two: 64,128,256,512,1024,2048,4096
+from here it was found that from 1024 it was sufficient since an accuracy of 95\% was achieved seen in \autoref{fig:line_graph_global}
+
+next for optimization sake every interval of 32 was tested in between, \autoref{fig:bar_max_achieved_accuracy} shows the max achieved accurcacy for each.
+
+
+
+
+% \todo{why not CNN decision: would probably require somewhere a linear layer anyways, or a large number of layers vastly reducing speed}
+% \todo{somewhere needs to be put a better reasoning why 2 matrices are more efficient: either have 1024 counters = excessive or 1024x768 counts which is slow and area gains are low}
+% The initial goal of our Binary Neural Network (BNN) architecture was to achieve a high level of performance using a single matrix for computations. However, this approach did not meet the target accuracy of 95\%, necessitating exploration of alternative designs.
+% Subsequent experiments with two matrices in the network structure suggested that this configuration could offer a similar level of computational efficiency while potentially improving accuracy. 
+% \textit{Results pending. This section will present accuracy metrics for different network configurations once available.}
+% \todo{lower hidden size, would drop accuracy too much}
+% \todo{lower input size also}
+ 
+
+
+
+
+
+
+ 
+
+% \todo{subsection accuracy}
+
+% Due to our rigorous testbenches, the accuracy from the raw numpy matrices and the testbench simulation was exactly equal.
+
+
+\subsection{Hardware metric results}
+
+- text showing overall area, power, timing
+
+\todo{Overall}
+  \todo{subsection area}
+  \todo{subsection power}
+  \todo{subsection timing}
+
+\label{ref:overall_minus_rest}
+\todo{Overall - rest} % register files part + counters
+  \todo{subsection area}
+  \todo{subsection power}
+  \todo{subsection timing}
+
+
+\subsection{Hardware Trade-off Results}
+
+	% - [ ] full design
+	% 	- [ ] note on how memory is most of the area
+\subsubsection{XNOR popcount}
+\label{ref:why_768}
+% To further optimize the input dimensions, we reduced the number of inputs from 784 to 768 by dropping the last 16 inputs. This simplification leverages the powers of two, specifically \(768 = 512 + 256 = 2^9 + 2^8\), which can simplify the hardware and align more efficiently with binary operations. This reduction did not impact performance.
+
+\todo{XNOR Popcount Evaluator}
+  \todo{subsection area}
+  \todo{subsection power}
+  \todo{subsection timing}
+\label{ref:exploration_pipelining}
+\todo{Explanation of results:}
+\todo{0 levels and 1 levels a wide number of valid divisors of 768 were tested and shown her}
+\todo{2 and 3 levels have too large exploration space thus first a reasonable setup was chosen and then for each additional test, only the part where the lowest slack was changed}
+
+\todo{final choice for design}
+
+	% - [ ] xnor popcount exploration
+	% 	- [ ] direct csa tree
+	% 	- [ ] 1 level
+	% 	- [ ] 2 levels
+	% 	- [ ] 3 levels
+
+\subsubsection{Majority classifier}
+\label{ref:lfsr_opt}
+
+\todo{Majority Classifier non lfsr}
+  \todo{subsection area}
+  \todo{subsection power}
+  \todo{subsection timing}
+\todo{Majority Classifier with lfsr optimization}
+  \todo{subsection area}
+  \todo{subsection power}
+  \todo{subsection timing}
+
+\subsubsection{Small section that weight memory is most of the area}
+
+
+
+\subsection{Rationale}
+\todo{place on different spot}
 
 \todo{section on hardware possible strategies}
 \todo{subsubsection strategy do everything sequentially}
 \todo{subsubsection strategy do everything in parallel in one tick}
 \todo{subsubsection strategy mixed approach, since parallel would be huge and sequentially would be unneccesary slow for little area and power gains due to weights storage that is mandatory}
 
-\subsection{Hardware Trade-off Results}
 
-\subsubsection{Small section that weight memory is most of the area}
-	% - [ ] full design
-	% 	- [ ] note on how memory is most of the area
-\subsubsection{XNOR popcount}
-\label{ref:exploration_pipelining}
-\todo{Explanation of results:}
-\todo{0 levels and 1 levels a wide number of valid divisors of 768 were tested and shown her}
-\todo{2 and 3 levels have too large exploration space thus first a reasonable setup was chosen and then for each additional test, only the part where the lowest slack was changed}
-	% - [ ] xnor popcount exploration
-	% 	- [ ] direct csa tree
-	% 	- [ ] 1 level
-	% 	- [ ] 2 levels
-	% 	- [ ] 3 levels
- 
-\subsubsection{Matrix 2}
-	% - [ ] matrix_2_design
-\todo{One line of original with real adders}
-\todo{One line of improved with lfsr counters}
-
-
-\subsection{Accuracy Trade-Off}
-
-\todo{why not CNN decision: would probably require somewhere a linear layer anyways, or a large number of layers vastly reducing speed}
-
-\todo{somewhere needs to be put a better reasoning why 2 matrices are more efficient: either have 1024 counters = excessive or 1024x768 counts which is slow and area gains are low}
-The initial goal of our Binary Neural Network (BNN) architecture was to achieve a high level of performance using a single matrix for computations. However, this approach did not meet the target accuracy of 95\%, necessitating exploration of alternative designs.
-
-
-Subsequent experiments with two matrices in the network structure suggested that this configuration could offer a similar level of computational efficiency while potentially improving accuracy. 
-
-\textit{Results pending. This section will present accuracy metrics for different network configurations once available.}
-
-\todo{lower hidden size, would drop accuracy too much}
-\todo{lower input size also}
-
-
-\label{ref:why_768}
-To further optimize the input dimensions, we reduced the number of inputs from 784 to 768 by dropping the last 16 inputs. This simplification leverages the powers of two, specifically \(768 = 512 + 256 = 2^9 + 2^8\), which can simplify the hardware and align more efficiently with binary operations. This reduction did not impact performance.
-
-
- 
-
-
-
-
-
-
-
+\section{Discussion}
+\todo{Hyperparameter tuning might be overfitting on the testset}
 
 \section{Conclusions}
 \todo{it was less area than matrix multiplication lab-1}
@@ -426,7 +396,7 @@ To further optimize the input dimensions, we reduced the number of inputs from 7
 
 \todo{future work}
 \todo{subsection better memory library}
-\todo{subsection other problems}
+\todo{subsection also try 729 as input size for xnor popcount csa network}
 \todo{subsection double is done}
 
 

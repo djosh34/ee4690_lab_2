@@ -1,4 +1,7 @@
+import os
+
 import numpy as np
+import pandas as pd
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -34,7 +37,6 @@ class BNN(nn.Module):
         self.fc1 = nn.Linear(768, intermediate_size, bias=False)
         self.clip1 = nn.Hardtanh(-1, 1)
 
-
         # self.fc2 = nn.Conv2d(in_channels=intermediate_size, kernel_size=kernel_size_2, out_channels=1)
         # self.fc2 = nn.Conv2d(in_channels=intermediate_size, kernel_size=kernel_size_2, out_channels=10)
         self.fc2 = nn.Linear(intermediate_size, 10, bias=False)
@@ -42,9 +44,6 @@ class BNN(nn.Module):
         # self.clip2 = nn.Hardtanh(-1, 1)
         #
         # self.fc3 = nn.Conv2d(in_channels=1, kernel_size=20, out_channels=10)
-
-
-
 
     def forward(self, x):
         # x = x.view(-1, 1, 28, 28)
@@ -64,7 +63,7 @@ class BNN(nn.Module):
         return x
 
 
-def train(model, trainloader, weight_decay=0.0000):
+def train(model, trainloader, testloader, device, learning_rate, num_epochs, batch_size, weight_decay=0.0000, save_accuracy_dataframe=None):
     # Initialize the model, loss function, and optimizer
     model.to(device)
 
@@ -99,14 +98,12 @@ def train(model, trainloader, weight_decay=0.0000):
             # print(f'Batch {current_done_batch} / {len(trainloader) * batch_size}')
         print()
         print(f'Epoch {epoch + 1}, Loss: {running_loss / len(trainloader)}')
-        test_numpy(model, testloader)
-        test_normal(model, testloader)
+        test_numpy(model, testloader, epoch, save_accuracy_dataframe)
+        test_normal(model, testloader, device)
         print()
 
 
-
-
-def test_normal(model, testloader):
+def test_normal(model, testloader, device):
     correct = 0
     total = 0
     with torch.no_grad():
@@ -142,6 +139,7 @@ def hardtanh(x, min_val=-1, max_val=1):
     # return np.maximum(np.minimum(x, max_val), min_val)
     return np.sign(x)
 
+
 def numpy_conv2d(input_data, weights, bias=None):
     batch_size, in_channels, in_height, in_width = input_data.shape
     out_channels, _, kernel_height, kernel_width = weights.shape
@@ -170,11 +168,10 @@ def numpy_conv2d(input_data, weights, bias=None):
 
     return output
 
-def linear(input_data, weights):
 
+def linear(input_data, weights):
     # using numpy dot product
     output = np.dot(input_data, weights.T)
-
 
     # for b in range(batch_size):
     #     for of in range(out_features):
@@ -184,6 +181,7 @@ def linear(input_data, weights):
     #             output[b, of] += bias[of]
 
     return output
+
 
 def numpy_model_forward(x, weights):
     x = x.reshape(-1, 768)
@@ -205,7 +203,8 @@ def numpy_model_forward(x, weights):
 
     return x
 
-def test_numpy(model, testloader):
+
+def test_numpy(model, testloader, epoch=None, save_accuracy_dataframe=None):
     # Extract weights from the PyTorch model
     weights = extract_weights(model)
     weights = binarize_weights(weights)
@@ -228,8 +227,6 @@ def test_numpy(model, testloader):
             # pred = torch.argmax(output, dim=1).numpy()
             np_pred = np.argmax(np_output, axis=1)
 
-
-
             new_correct = (np_pred == np_target).sum()
             correct += new_correct
             total += np_target.size
@@ -237,6 +234,9 @@ def test_numpy(model, testloader):
 
     accuracy = correct / total
     print(f'Accuracy of the NumPy model: {accuracy * 100:.2f}%')
+    if save_accuracy_dataframe is not None:
+        save_accuracy_dataframe.loc[epoch, 'accuracy'] = accuracy
+
 
 def save_binarized_weights(weights):
     fc1_weight = weights['fc1.weight']
@@ -300,21 +300,31 @@ def save_test_data(testloader):
             f.write(''.join(map(str, row)) + '\n')
 
 
-if __name__ == '__main__':
-
-
+def perform(hidden_size, epoch=None):
+    print(f'Performing with hidden size: {hidden_size}')
     training = True
     # training = False
-    # device = "mps"
-    device = "cpu"
+    device = "mps"
+    # device = "cpu"
 
     batch_size = 2000
     test_batch_size = 20
-    num_epochs = 20
+    if epoch is not None:
+        num_epochs = epoch
+    else:
+        num_epochs = 2
     learning_rate = 0.0005
     weight_decay = 0.0000
     # hidden_size = 81*3*3
-    hidden_size = 96
+    # hidden_size = hidden_sizes[0]
+
+    save_accuracy_folder = './save_accuracy'
+    os.makedirs(save_accuracy_folder, exist_ok=True)
+    save_accuracy_file = f'{save_accuracy_folder}/accuracy_numpy_{hidden_size}.csv'
+
+    save_accuracy_dataframe = pd.DataFrame(index=range(num_epochs), columns=['epoch', 'hidden_size', 'accuracy'])
+    save_accuracy_dataframe['epoch'] = range(num_epochs)
+    save_accuracy_dataframe['hidden_size'] = hidden_size
 
     # Load MNIST dataset
     # transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
@@ -322,25 +332,29 @@ if __name__ == '__main__':
     # transform = transforms.Compose([transforms.ToTensor(), transforms.Lambda(lambda x: np.where(x > 0, 1, -1).astype(np.float32))])
     # transform that everything is if x > 0 then 1 else -1, then only keep the first 729 elements after flattening
     # transform = transforms.Compose([transforms.ToTensor(), transforms.Lambda(lambda x: np.where(x > 0, 1, -1).astype(np.float32)), transforms.Lambda(lambda x: x[:729])])
-    transform = transforms.Compose([transforms.ToTensor(), transforms.Lambda(lambda x: np.where(x > 0, 1, -1).astype(np.float32)), transforms.Lambda(lambda x: x[:768])])
+    transform = transforms.Compose(
+        [transforms.ToTensor(), transforms.Lambda(lambda x: np.where(x > 0, 1, -1).astype(np.float32)),
+         transforms.Lambda(lambda x: x[:768])])
 
     trainset = torchvision.datasets.MNIST(root='./data', train=True, download=True, transform=transform)
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, collate_fn=lambda x: tuple(x_.to(device) for x_ in default_collate(x)))
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True,
+                                              collate_fn=lambda x: tuple(x_.to(device) for x_ in default_collate(x)))
     # trainloader = torch.utils.data.DataLoader(trainset, batch_size=1000, shuffle=True)
     testset = torchvision.datasets.MNIST(root='./data', train=False, download=True, transform=transform)
-    testloader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False, collate_fn=lambda x: tuple(x_.to(device) for x_ in default_collate(x)))
+    testloader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False,
+                                             collate_fn=lambda x: tuple(x_.to(device) for x_ in default_collate(x)))
     # testloader = torch.utils.data.DataLoader(testset, batch_size=1000, shuffle=False)
 
     # Train the BNN
     if training:
         model = BNN(hidden_size=hidden_size)
-        train(model, trainloader, weight_decay=weight_decay)
-
+        train(model=model, trainloader=trainloader, testloader=testloader, device=device, learning_rate=learning_rate,
+              num_epochs=num_epochs, batch_size=batch_size, weight_decay=weight_decay, save_accuracy_dataframe=save_accuracy_dataframe)
+        save_accuracy_dataframe.to_csv(save_accuracy_file, index=False)
 
         # save the model
-        test_normal(model, testloader)
+        test_normal(model, testloader, device)
         torch.save(model.state_dict(), 'bnn_model.pth')
-
 
     model = BNN(hidden_size=hidden_size)
     model.load_state_dict(torch.load('bnn_model.pth'))
@@ -354,4 +368,14 @@ if __name__ == '__main__':
     test_numpy(model, testloader)
 
 
+if __name__ == '__main__':
 
+    # hidden_sizes = [64, 96, 128, 192, 256, 384, 512, 768, 1024]
+    # hidden_sizes = [768 + 1*32, 768 + 2*32, 768 + 3*32, 768 + 4*32, 768 + 5*32, 768 + 6*32, 768 + 7*32]
+    # hidden_sizes = [768 + 7*32]
+    # hidden_sizes = hidden_sizes + [1024 + 256, 1024 + 512, 1024 + 768, 1024 + 1024]
+
+    hidden_sizes = [512 + 1 * 32, 512 + 2 * 32, 512 + 3 * 32, 512 + 4 * 32, 512 + 5 * 32, 512 + 6 * 32, 512 + 7 * 32]
+    hidden_sizes = hidden_sizes + [4096]
+    for hidden_size in hidden_sizes:
+        perform(hidden_size, epoch=40)
