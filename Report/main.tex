@@ -182,6 +182,9 @@ In the MNIST dataset, the 8-bit input values are pre-processed such that values 
 Parallel evaluations using NumPy, simulating the potential BNN's performance, involve rounding matrices to \(\{-1, 1\}\) to validate that inference based on the matrix multiplications using the rounded values aligns with the outcomes predicted by the PyTorch model.
 
 
+genus ??? vhdl ???
+
+
 
 \subsection{Hardware implementation}
 
@@ -327,26 +330,65 @@ From that it was discovered that 608 as a hidden size also reached our target of
 \label{ref:why_768}
 % To further optimize the input dimensions, we reduced the number of inputs from 784 to 768 by dropping the last 16 inputs. This simplification leverages the powers of two, specifically \(768 = 512 + 256 = 2^9 + 2^8\), which can simplify the hardware and align more efficiently with binary operations. This reduction did not impact performance.
 
-\todo{XNOR Popcount Evaluator}
-  \todo{subsection area}
-  \todo{subsection power}
-  \todo{subsection timing}
-
 \label{ref:exploration_pipelining}
 
-\todo{Explanation of results:}
-\todo{0 levels and 1 levels a wide number of valid divisors of 768 were tested and shown her}
-\todo{2 and 3 levels have too large exploration space thus first a reasonable setup was chosen and then for each additional test, only the part where the lowest slack was changed}
 
-\todo{final choice for design}
+it is often good practise to start with the simpelest model and then later optimize. first we just used a full direct csa tree for the popcount. Then to decrease the minimum slack needed, differing number of pipeline stages where added inside the adder network. 
 
-	% - [ ] xnor popcount exploration
-	% 	- [ ] direct csa tree
-	% 	- [ ] 1 level
-	% 	- [ ] 2 levels
-	% 	- [ ] 3 levels
 
-it is often good practise to start with the simpelest model and then later optimize. 
+First just the xnor popcount was synthesized using the genus \cite{genus} tool to speed up the exploration step.
+
+// make table in latex from this : Direct CSA sum
+Area	Timing	Power
+	4486.888	7957	7.30E-04
+
+
+// it needs to be more clear what the 16,64 and 256 mean here. so we start at the input which is the xnor output vector from \autoref{fig:xnor_popcount}. Then instead of having one csa tree to the output sum, there are multiple trees. so for 64 is meant that there are 768/64 = 12 sum registers in the in between level, that can each count up to max 64. then for each 64 bits in the xnor vector a csa tree is made to each in between sum register. then from the in between level to the output there is another csa tree adding the in between registers up to the output sum. the csa tree is not decided by us, but by the genus tool itself, since in most cases the synthesize tool knows best which type of tree to use.
+
+Next an exploration was done using one in between level of several different sum ranges: [16,32,48,64,96,128,192,256] where for instance 16 means that the registers can store a maximum of count 16 thus requiring 4 bits.
+
+// make table in latex from this : CSA one pipelined register, include the one with NA (they are added in later)
+Area	Timing	Power		Max sum
+6664.63	8318	1.30E-03		16
+5739.482	8458	1.06E-03		32
+5298.986	8604	9.40E-04		48
+5241.796	8618	9.58E-04		64
+4986.702	8528	8.79E-04		96
+4937.758	8457	8.47E-04		128
+4793.054	8251	8.41E-04		192
+NA	NA	NA		256
+NA	NA	NA		384
+
+
+// now it needs to be extra clear that in the 2+ levels it is meant that for instance the 256 on level 2 means that the sum registers on that level can count up to 256. so for level 1 64 and level 2 256 it is meant that the registers in level 2 add up 256/64 registers from level 1
+Next two levels were explored, however since exploring all different combinations would take very long, a compromise was reached.
+the test was started by interjecting an addition level of sum register with max 256 between the 64 and output sum, where 64 was the best in terms of timing from the previous test.
+then for each next test it was seen between which two levels the timing was worst, so for instance for the level 1 at 64 and level 2 at 256 the worst timing was between the input and 64, therefore for the next
+test level 1 was changed to 16 etc....
+each of these decisions was made solely on the timing, since area and power were mostly dominated by the memory footprint seen in \ref{ref:overall_minus_rest}
+
+// two level explo
+Area	Timing	Power	Max sum level 1	Max sum level 2	Worst timing
+5364.688	8617	1.01E-03	64	256	input -> 64
+6864.928	8740	1.36E-03	16	256	16 -> 256
+5526.15	8750	9.84E-04	48	192	input -> 48
+5960.262	8834	1.11E-03	32	192	input -> 32
+5998.832	8851	1.07E-03	24	192	192 -> output sum
+5899.614	8740	1.05E-03	24	384	24 -> 384
+
+
+since from the table of two levels 24,192 was best with the worst timing being 192->output and when doing 24,384 was 24->384 worst timing: in the three levels 24,192,384 was tried first.
+now since 384->output is the worst timing, the timing can't be improved since there is no other division of 768 that is greater than 384.
+To further optimize also 16,192,384 and 16,128,384 were tested to observe further area improvements, but both of them had worse timing than the initial 24,192,384 so that was chosen finally
+
+// level 3 explo
+				Level 1	Level 2	Level 3	Worst timing
+3	6095.39	8973	1.08E-03	24	192	384	384->output
+	NA	NA	NA	16	192	384	NA
+3	7108.318	8979	1.40E-03	16	128	384	16->128
+
+
+
 
 
 
