@@ -84,13 +84,12 @@ ikarydis@tudelft.nl}
 }
 
 \begin{document}
-\AlwaysPagewidth{
+
 \maketitle
 
 
 \begin{abstract}
 \end{abstract}
-}
 
 \todo{general todos}
 \todo{work out all todos}
@@ -103,67 +102,24 @@ ikarydis@tudelft.nl}
 
 \subsection{Basic Theory of Binary Neural Networks}
 
+Binary Neural Networks (BNNs) reduce all computational values to 1-bit, representing them as either \(+1\) or \(-1\). This quantization allows for the replacement of traditional Multiply-Accumulate (MAC) operations with XNOR and popcount operations, significantly enhancing computational speed and reducing hardware complexity and power consumption \cite{courbariaux2016binarynet, simons2019review}. The detailed mathematical framework is provided in Appendix \ref{appendix:bnn_maths}.
 
-Binary Neural Networks (BNNs) are an advanced quantization method for neural networks that offers a unique approach to computation. By quantizing weights to 1-bit, BNNs streamline the multiplication process to produce more efficient results. This innovative method allows for hardware efficiency improvements when compared to traditional quantized and floating-point neural networks.
+\subsection{Scope of the Project}
 
-Overall, BNNs offer a promising approach to developing efficient and high-performance neural networks suitable for a wide range of practical applications. BNNs represent a class of neural networks where weights and activations are constrained to binary values, typically \(\{-1, 1\}\). This binarization facilitates significant computational efficiency, particularly in hardware implementations.
+The objective of this project is to develop a BNN device utilizing the Genus \cite{genus} tool and the Nangate Open Cell Library \cite{nangate_lib} to classify MNIST test set images with at least 95\% accuracy. Upon achieving this accuracy, the focus shifts to optimizing the device to minimize timing, area, and power requirements. These optimizations aim to decrease the number of clock cycles, thereby reducing energy consumption and overall area, thus lowering power consumption.
 
-% \subsection{Equivalence of Matrix Multiplication and XNOR-Popcount Operations}
+\section{Outline}
+\label{sec:outline}
 
-In BNNs, matrix multiplication involving binary weights and activations can be effectively implemented using XNOR and popcount operations in hardware. The XNOR operation provides a binary equivalence to multiplication, while the popcount function, which counts the number of ones in the result, corresponds to the summation step in matrix multiplication. This approach is computationally efficient and well-suited to hardware accelerators.
+Section \ref{sec:overview} provides an overview of the BNN architecture. Section \ref{sec:implementation} details the software and hardware implementation strategies used for the BNN, including training methodologies and tooling for device synthesis. Section \ref{sec:results} presents the results, including simulation setups, demonstration outputs, and optimization explorations. Finally, Section \ref{sec:discussion} discusses the design choices and observed variabilities, and Section \ref{sec:conclusions} concludes with the success of the project and potential areas for future work, as expanded in Section \ref{sec:future}. The appendix contains any additional mathematical foundations for the hardware implementations.
 
-\todo{these refs} %DONE
-\todo{ref other section} %DONE
-This equivalence has been detailed in various studies \cite{courbariaux2016binarynet}, \cite{simons2019review}, highlighting the advantages of BNNs for high-speed and energy-efficient computations in specialized hardware.
-
-\subsection{Contribution \& Scope of the Project}
-\todo{Rewrite aim, such that our aim was to first achieve a respectable accuracy of 95\% on the MNIST \cite{mnist} dataset, and then further improve the design to optimize on area, power and minimum achievable clock speed.} %DONE
-
-\todo{rewrite this part also include: we used MNIST dataset (with reference), testset of 10.000 images.} %DONE
-
-
-
-It covers both training and inference phases, providing a complete view of the BNN's practical use and performance.
-
-\subsection{Outline}
-In this report, we begin with Section \ref{sec:introduction} being an explanation of the basic theory of BNNs. We then discuss the specific contributions and scope of the project, setting the stage for the detailed exploration to follow in this outline.
-
-Section \ref{sec:overview} provides an overview of the BNN architecture, delving into both the training architecture and the inference network architecture. This section lays the groundwork for understanding the detailed implementations and optimizations described later in the report.
-
-In Section \ref{sec:implementation}, we delve into the implementation of the BNN architecture. This section is divided into three main parts: software implementation, hardware implementation, and various optimizations. The optimizations include techniques such as pipelining popcount and using an LFSR-based majority classifier, which are crucial for enhancing the performance of BNNs.
-
-Section \ref{sec:results} presents the results of our work. We start with the simulation setup, followed by a demonstration of the implemented architecture. We then discuss the design metrics and trade-offs involved in the implementation. This includes hardware trade-off results, where we highlight specific aspects such as the area occupied by weight memory, XNOR popcount operations, and matrix computations. Additionally, we analyze the accuracy trade-offs, providing a comprehensive view of the performance and efficiency of our BNN implementation.
-
-In Section \ref{sec:discussion}, we address minor accuracy differences and the potential of overfitting due to hyperparameter tuning. We justify design decisions such as using two matrices for efficiency and avoiding CNNs to maintain operational speed. Additionally, we highlight the significance of managing weight memory and propose a hybrid hardware strategy that balances speed and resource usage for fully connected BNNs.
-
-In Section \ref{sec:conclusions}, we draw conclusions from our work, summarizing the key findings and their implications.
-
-Finally, in Section \ref{sec:future} we highlight avenues for future research in BNN hardware implementation. Firstly, developing a specialized memory library optimized for binary operations could significantly enhance access time and energy efficiency. Secondly, experimenting with an input size of 729 for the XNOR-popcount CSA network may improve computational efficiency and reduce hardware complexity. Lastly, exploring a double precision implementation could enhance numerical stability and accuracy in certain applications, albeit with considerations for trade-offs in area, power, and performance.
-
-The \ref{appendix}ppendix contains supplementary material, including the first matrix multiplication with activation and the mathematical details of the second matrix. References to relevant literature are provided at the end of the report to support the discussions and claims made throughout.
-
-
-\todo{written table of contents for coming sections -> DONE}
 
 \section{Overview of BNN Architecture}
 \label{sec:overview}
-\subsection{Training Architecture}
-Section \autoref{ref:why_768} provides a rationale for choosing 768 input values over 784, demonstrating superior performance in our specific context.
 
-The architecture of our training network is outlined as follows:
-\begin{itemize}
-    \item The input vector consists of 768 values, each either -1 or 1.
-    \item The first layer performs a matrix multiplication using a weight matrix of size \(1024 \times 768\).
-    \item A hardtanh activation function is applied, resulting in output values constrained within the range \(\{-1, 1\}\).
-    \item The second layer performs a matrix multiplication with a weight matrix of size \(10 \times 1024\).
-    \item The resulting output vector comprises 10 summed values.
-    \item The maximum value among these 10 sums is selected as the prediction.
-\end{itemize}
+Section \ref{ref:why_768} justifies the selection of 768 input values instead of 784, demonstrating enhanced performance in this context.
 
-\subsection{Inference Network Architecture}
-\label{subsec:inference_network_architecture}
-The inference network shares the same mathematical structure as the training network. The primary difference lies in the activation function: the inference network employs a hard activation to constrain outputs strictly to -1 and 1.
-
+The BNN architecture is fully connected, consisting of an input layer with 768 nodes, a hidden layer initially with 1024 nodes (optimized to 608 nodes), and an output layer with 10 nodes for digit classification. During training, the hidden layer uses a hardtanh activation, while the inference phase employs a hard activation function to produce outputs strictly as \(-1\) or \(+1\). The highest sum from the output layer determines the predicted digit.
 
 
 \section{Implementation of BNN architecture}
@@ -178,12 +134,15 @@ In the MNIST dataset, the 8-bit input values are pre-processed such that values 
 Parallel evaluations using NumPy, simulating the potential BNN's performance, involve rounding matrices to \(\{-1, 1\}\) to validate that inference based on the matrix multiplications using the rounded values aligns with the outcomes predicted by the PyTorch model.
 
 
-genus ??? NandGateOpenCellLibrary ??? \cite{nangate_lib} vhdl ???
 
+
+
+\subsection{Hardware Tooling}
+
+The device was synthesized using the Genus tool \cite{genus} with the Nangate Open Cell Library \cite{nangate_lib}, and implemented in VHDL. Testing simulations were conducted with GHDL \cite{ghdl}, which enabled efficient simulation and expedited testing iterations.
 
 
 \subsection{Hardware implementation}
-
 \autoref{fig:overview} shows the hardware architecture of the Binary Neural Network (BNN). 
 
 The XNOR Popcount Evaluator (\autoref{fig:xnor_popcount}) performs the first matrix multiplication and activation by XNORing and popcounting the input vector with the current row of weights. It outputs a bit indicating if the sum is $\geq 384$. The Majority Classifier (\autoref{fig:majority_classifier}) conducts the second matrix multiplication, determining the output by choosing the highest sum among the columns.
@@ -227,7 +186,7 @@ The Majority Classifier activates if the validity bit is set. Upon activation, i
 \hfill\\
 \label{ref:pipeline_popcount}
 
-Instead of performing the popcount in a single clock cycle using a large Carry-Save Adder (CSA) network, our exploration in \autoref{ref:exploration_pipelining} determined that a pipelined approach with four registers between the adder stages is optimal. Thus, the popcount result becomes valid after $n=4$ cycles, with subsequent cycles producing new valid sums.
+Instead of performing the popcount in a single clock cycle using a large Carry-Save Adder (CSA) network, our exploration in Section \ref{ref:xnor_popcount} determined that a pipelined approach with four registers between the adder stages is optimal. Thus, the popcount result becomes valid after $n=4$ cycles, with subsequent cycles producing new valid sums.
 
 \subsubsection{LFSR-Based Majority Classifier}
 \hfill\\
@@ -236,9 +195,10 @@ Instead of performing the popcount in a single clock cycle using a large Carry-S
 Initially, individual counters for each digit were used, along with a tree structure to identify the highest count. However, this structure is redundant if the highest count is tracked dynamically. Each counter is compared against the current highest count. If a counter matches the highest count and is to be incremented, the highest count is updated accordingly. This update is achieved by performing a bitwise AND operation between a 10-bit vector indicating counters equal to the highest count and a 10-bit vector indicating counters to be incremented. An OR reduction of this resultant vector determines if the highest count should increase. 
 Ultimately, this approach allows the additional optimization of replacing normal counters with Linear Feedback Shift Register (LFSR) counters, which provide equivalent functionality using less area \cite{xilinx_lfsr}, as is shown in Section \ref{ref:hardware_metrics}
 
-\subsubsection{Hidden layer size optimization}
+\subsubsection{Hidden Layer Size Optimization}
 \hfill\\
-\todo{ref to hidden size optimization}
+
+The hidden layer size was optimized by reducing it from its initial configuration, as discussed extensively in Section \ref{ref:hidden_size_optimization}.
 
 
 \section{Results}
@@ -251,7 +211,6 @@ This segmentation allowed the generation of random test data for both components
 
 Additionally, text files for input vectors and corresponding labels were generated using the same method. This enabled testing the entire 10,000-image MNIST \cite{mnist} testset to verify the device's operation.
 
-Simulations were executed using GHDL \cite{ghdl} to accelerate the simulation process and facilitate rapid testing iterations.
 
 
 
@@ -284,7 +243,6 @@ This section provides a detailed demonstration of the simulation results.
 
 This section presents the results achieved in terms of timing, area, power, and accuracy. Among these, only the first optimization impacts accuracy; the latter two affect timing, area, and power metrics exclusively. A comparison of these optimizations for the total metrics is summarized in Table \ref{tab:optimization_metrics}. 
 
-\todo{power to joules}
 
 \begin{table}[h]
     \centering
@@ -322,6 +280,11 @@ This section presents the results achieved in terms of timing, area, power, and 
     \end{tabular}
 \end{table}
 
+\subsection{Power consumption}
+\todo{section calculation of power}
+\todo{number of cycles = hidden size + delay from xnor popcount}
+\todo{power from number of cycles and watts}
+
 \subsubsection{Note on Input Size}
 \hfill\\
 \label{ref:why_768}
@@ -353,6 +316,7 @@ For further optimization, the hidden size was refined in increments of 32 betwee
     \label{fig:bar_max_achieved_accuracy}
 \end{figure}
 
+
 \subsection{XNOR popcount Optimization}
 \label{ref:xnor_popcount}
 
@@ -383,6 +347,7 @@ The initial exploration of the XNOR popcount involved synthesizing a direct Carr
 
 To optimize performance and reduce the required minimum slack, pipelining stages were introduced within the CSA network. This exploration started by examining a single intermediary level of sum registers. These registers accumulate counts up to a specified maximum before passing their sum to the next stage. For example, a configuration with a maximum sum of 64 means that the CSA tree computes partial sums of the XNOR output vector in chunks of 64, leading to intermediate registers each counting up to 64. These intermediate sums are then aggregated by another CSA tree to produce the final output sum. Various configurations were explored, where the maximum sums ranged from 16 to 384. Table \ref{tab:first_level} presents the area, timing, and power metrics for these configurations.
 
+\todo{this NA}
 
 \begin{table}[h]
     \centering
@@ -437,6 +402,7 @@ Finally, a three-level pipelining configuration was investigated to achieve furt
 Introducing an additional layer does not yield better timing performance, as the critical timing slack occurs between the 384 sum level and the output. Given that 768 cannot be divided into larger segments than 384, further division does not mitigate this bottleneck. 
 The results for the three-level pipelining exploration are provided in Table \ref{tab:three_level}.
 
+\todo{this NA}
 \begin{table}[h]
     \centering
     \caption{Metrics for CSA Tree with Three Levels of Pipelining}
@@ -481,6 +447,7 @@ Significant variability was observed in the synthesis process using the Genus \c
 \label{sec:conclusions}
 
 Our aim of achieving 95\% accuracy was succesful. 
+\todo{this XX percent}
 The exploration of various hidden sizes was crucial in enhancing accuracy and optimizing hardware performance. The weight storage was identified as the primary bottleneck, particularly due to register file demands. Our optimizations resulted in a 2x performance increase, a 38\% reduction in design area, and a XX\% decrease in energy per inference.
 
 
