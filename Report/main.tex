@@ -381,28 +381,26 @@ next for optimization sake every interval of 32 was tested in between, \autoref{
 
 
 \section{Discussion}
-\subsection{Rationale}
-\todo{place on different spot}
+	%   - [ ] accuracy differences were not that great and partially due to random chance
+	% - [ ] Hyperparameter tuning might be overfitting on the testset
 
-\todo{section on hardware possible strategies}
-\todo{subsubsection strategy do everything sequentially}
-\todo{subsubsection strategy do everything in parallel in one tick}
-\todo{subsubsection strategy mixed approach, since parallel would be huge and sequentially would be unneccesary slow for little area and power gains due to weights storage that is mandatory}
-
-\subsubsection{Small section that weight memory is most of the area}
-
-% \todo{why not CNN decision: would probably require somewhere a linear layer anyways, or a large number of layers vastly reducing speed}
-% \todo{somewhere needs to be put a better reasoning why 2 matrices are more efficient: either have 1024 counters = excessive or 1024x768 counts which is slow and area gains are low}
-\todo{Hyperparameter tuning might be overfitting on the testset}
+	% - [ ] Rationale
+	%   - [ ] somewhere needs to be put a better reasoning why 2 matrices are more efficient: either have 1024 counters = excessive or 1024x768 counts which is slow and area gains are low
+	% 	- [ ] why not CNN decision: would probably require somewhere a linear layer anyways, or a large number of layers vastly reducing speed
+	% 	- [ ] Small section that weight memory is most of the area
+	%     - [ ] section on hardware possible strategies given Fully connected bnn
+	% 	    - [ ] subsubsection strategy do everything sequentially
+	% 	    - [ ] subsubsection strategy do everything in parallel in one tick
+	% 	    - [ ] subsubsection strategy mixed approach, since parallel would be huge and sequentially would be unneccesary slow for little area and power gains due to weights storage that is mandatory
 
 \section{Conclusions}
-\todo{it was less area than matrix multiplication lab-1}
-\todo{timing bottleneck mostly from memory}
+	- [ ] exploration of multiple hidden sizes was very benificial
+	- [ ] timing bottleneck mostly from memory
 
 \todo{future work}
-\todo{subsection better memory library}
-\todo{subsection also try 729 as input size for xnor popcount csa network}
-\todo{subsection double is done}
+	- [ ] subsection better memory library
+	- [ ] subsection also try 729 as input size for xnor popcount csa network
+	- [ ] subsection double is done
 
 
 

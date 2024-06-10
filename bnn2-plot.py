@@ -7,7 +7,7 @@ import numpy as np
 def load_data(folder_path, hidden_sizes):
     results = []
     for file_name in os.listdir(folder_path):
-        if file_name.endswith(".csv"):
+        if file_name.endswith(".csv") and 'accuracy_numpy_' in file_name and not "best" in file_name:
             # Extract hidden size from file name
             hidden_size = int(file_name.split('_')[-1].split('.')[0])
             if hidden_size in hidden_sizes:
@@ -84,6 +84,8 @@ if __name__ == "__main__":
     folder_path = "save_accuracy"  # Update this to your actual folder path
 
     # Define hidden sizes inside main block
+    # hidden_sizes = [x for x in range(512, 1024, 32)]
+
     # hidden_sizes = [64, 128, 256, 512]
     # hidden_sizes = hidden_sizes + [768, 768 + 1 * 32, 768 + 2 * 32, 768 + 3 * 32, 768 + 4 * 32, 768 + 5 * 32, 768 + 6 * 32, 768 + 7 * 32,
     #                 768 + 8 * 32]

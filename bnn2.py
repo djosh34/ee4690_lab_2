@@ -234,16 +234,19 @@ def test_numpy(model, testloader, epoch=None, save_accuracy_dataframe=None):
 
     accuracy = correct / total
     print(f'Accuracy of the NumPy model: {accuracy * 100:.2f}%')
-    if accuracy >= 0.95:
-        print(f'Accuracy is greater than 95% at epoch {epoch}')
-        save_binarized_weights(extract_weights(model))
-        exit(0)
-
     if save_accuracy_dataframe is not None:
         save_accuracy_dataframe.loc[epoch, 'accuracy'] = accuracy
 
+    if accuracy >= 0.95:
+        print(f'Accuracy is greater than 95% at epoch {epoch}')
+        save_binarized_weights(extract_weights(model))
+        torch.save(model.state_dict(), f'bnn_model_{int(accuracy*1000)}.pth')
+        if save_accuracy_dataframe is not None:
+            save_accuracy_dataframe.to_csv(f'./save_accuracy/{int(accuracy*1000)}.csv', index=False)
 
-def save_binarized_weights(weights):
+
+
+def save_binarized_weights(weights, hidden_size=608):
     fc1_weight = weights['fc1.weight']
     fc2_weight = weights['fc2.weight']
 
@@ -252,11 +255,11 @@ def save_binarized_weights(weights):
     fc2_weight = np.where(fc2_weight < 0, 0, 1)
 
     # Save weights to binary text files
-    with open('fc1_weight_bin_896.txt', 'w') as f:
+    with open(f'fc1_weight_bin_{hidden_size}.txt', 'w') as f:
         for row in fc1_weight:
             f.write(''.join(map(str, row)) + '\n')
 
-    with open('fc2_weight_bin_896.txt', 'w') as f:
+    with open(f'fc2_weight_bin_{hidden_size}.txt', 'w') as f:
         for row in fc2_weight:
             f.write(''.join(map(str, row)) + '\n')
 
@@ -307,8 +310,8 @@ def save_test_data(testloader):
 
 def perform(hidden_size, epoch=None):
     print(f'Performing with hidden size: {hidden_size}')
-    training = True
-    # training = False
+    # training = True
+    training = False
     device = "mps"
     # device = "cpu"
 
@@ -323,14 +326,14 @@ def perform(hidden_size, epoch=None):
     # hidden_size = 81*3*3
     # hidden_size = hidden_sizes[0]
 
-    # save_accuracy_folder = './save_accuracy'
-    # os.makedirs(save_accuracy_folder, exist_ok=True)
-    # save_accuracy_file = f'{save_accuracy_folder}/accuracy_numpy_{hidden_size}.csv'
+    save_accuracy_folder = './save_accuracy'
+    os.makedirs(save_accuracy_folder, exist_ok=True)
+    save_accuracy_file = f'{save_accuracy_folder}/accuracy_numpy_{hidden_size}_best.csv'
 
-    save_accuracy_dataframe = None
-    # save_accuracy_dataframe = pd.DataFrame(index=range(num_epochs), columns=['epoch', 'hidden_size', 'accuracy'])
-    # save_accuracy_dataframe['epoch'] = range(num_epochs)
-    # save_accuracy_dataframe['hidden_size'] = hidden_size
+    # save_accuracy_dataframe = None
+    save_accuracy_dataframe = pd.DataFrame(index=range(num_epochs), columns=['epoch', 'hidden_size', 'accuracy'])
+    save_accuracy_dataframe['epoch'] = range(num_epochs)
+    save_accuracy_dataframe['hidden_size'] = hidden_size
 
     # Load MNIST dataset
     # transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
@@ -370,13 +373,13 @@ def perform(hidden_size, epoch=None):
     model.eval()
 
     # save_test_data(testloader)
-    # save_binarized_weights(extract_weights(model))
+    save_binarized_weights(extract_weights(model))
 
     test_numpy(model, testloader)
 
 if __name__ == "__main__":
-    while True:
-        perform(608, epoch=40)
+    # while True:
+    perform(608, epoch=30)
 
     # hidden_sizes = [64, 96, 128, 192, 256, 384, 512, 768, 1024]
     # hidden_sizes = [768 + 1*32, 768 + 2*32, 768 + 3*32, 768 + 4*32, 768 + 5*32, 768 + 6*32, 768 + 7*32]

@@ -30,6 +30,8 @@ architecture testbench of predict_testbench is
 
     signal cycle_counter : integer := 0;
 
+    signal expected_row : std_logic_vector(0 to OUTPUT_SIZE - 1);
+
 
 
 
@@ -63,8 +65,8 @@ begin
 
     -- Test process
     process
-        file testdata : text open read_mode is  "/pwd/predict/examples/all_test_data_bin.txt";
-        file labeldata : text open read_mode is "/pwd/predict/examples/all_test_labels_bin.txt";
+        file testdata : text open read_mode is  "/pwd/predict/examples/1_test_data_bin.txt";
+        file labeldata : text open read_mode is "/pwd/predict/examples/1_test_labels_bin.txt";
 
 
         variable line_in : line;
@@ -79,6 +81,10 @@ begin
         variable i_loop_stopper : integer := 0;
         variable were_there_errors : boolean := false;
         variable error_counter : integer := 0;
+        variable error_was_reported : boolean := false;
+
+        variable there_was_an_1_in_output : boolean := false;
+        variable multiple_ones_counter : integer := 0;
     begin
         rst <= '1';
         wait for 20 ns;
@@ -100,6 +106,7 @@ begin
 	-- 		- [ ] advance clock
 
         i_loop_stopper := 0;
+        multiple_ones_counter := 0;
 
         while not endfile(testdata) loop
             readline(testdata, line_in);
@@ -107,6 +114,8 @@ begin
 
             read(line_in, input_row_var);
             read(line_out, expected_output);
+
+            expected_row <= expected_output;
 
             -- write(line_out, string'("Setting input row..."));
             -- writeline(output, line_out);
@@ -138,8 +147,22 @@ begin
             -- write(line_out, string'("Checking output..."));
             -- writeline(output, line_out);
 
+            there_was_an_1_in_output := false;
+            error_was_reported := false;
             for i in 0 to OUTPUT_SIZE - 1 loop
-                if output_row(i) = '1' and expected_output(i) = '0' then
+                if output_row(i) = '1' and there_was_an_1_in_output then
+                    multiple_ones_counter := multiple_ones_counter + 1;
+                    write(line_out, string'("Multiple ones in output"));
+                end if;
+
+                if output_row(i) = '1' then
+                    there_was_an_1_in_output := true;
+                end if;
+
+
+
+
+                if output_row(i) = '1' and expected_output(i) = '0' and not error_was_reported then
                     were_there_errors := true;
                     write(line_out, string'("Error in output"));
                     writeline(output, line_out);
@@ -150,10 +173,12 @@ begin
                     write(line_out, output_row);
                     writeline(output, line_out);
                     were_there_errors := true;
+
                     error_counter := error_counter + 1;
-                    exit;
+                    error_was_reported := true;
 
                 end if;
+
             end loop;
 
             write(line_out, string'("i: "));
@@ -171,7 +196,6 @@ begin
 
         end loop;
 
-        --     wait for 20 ns;
 
 
 
@@ -190,9 +214,9 @@ begin
         write(line_out, string'("Test is finished..."));
         writeline(output, line_out);
 
-
-
         wait for 20 ns;
+
+
 
         write(line_out, string'("Score: "));
         write(line_out, i_loop_stopper - error_counter);
@@ -200,8 +224,13 @@ begin
         write(line_out, int_to_leading_zeros(i_loop_stopper, 5));
         writeline(output, line_out);
 
+        write(line_out, string'("Multiple ones: "));
+        write(line_out, multiple_ones_counter);
+        writeline(output, line_out);
 
-        wait;
+        report "Test finished" severity failure;
+
+
     end process;
 
 end architecture testbench;
