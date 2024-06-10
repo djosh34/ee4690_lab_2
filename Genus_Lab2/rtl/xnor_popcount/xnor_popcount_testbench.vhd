@@ -94,6 +94,7 @@ begin
         variable expected_is_high : std_logic;
 
         variable std_out : line;
+        variable first : boolean := true;
 
         variable were_there_errors : boolean := false;
         variable error_count : integer := 0;
@@ -117,7 +118,6 @@ begin
         read(input_line_row, input_vector_row);
         input_input <= input_vector_row;
 
-
         while not endfile(weights_1_file) loop
 
           -- read row for weights
@@ -125,17 +125,28 @@ begin
           read(weights_1_line_row, weights_1_vector_row);
           input_weights <= weights_1_vector_row;
 
-
           enable <= '1';
+
+          if first then
+            first := false;
+            wait for clk_period;
+          end if;
+
+
+
+
 
 
 
           wait for clk_period;
 
           if is_valid = '1' then
+
+
             -- read row for expected sum
             readline(expected_output_file, expected_sum_row);
             read(expected_sum_row, expected_sum_vector_row);
+
 
             expected_is_high := '1' when expected_sum_vector_row >= 384 else '0';
 
@@ -168,7 +179,7 @@ begin
 
             max_test_counter := max_test_counter + 1;
 
-            if error_count >= 1 then
+            if error_count >= 100 then
               report "Test passed" severity failure;
               exit;
             end if;

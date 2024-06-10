@@ -1,6 +1,12 @@
 % -- just a two column document
 \documentclass[conference]{IEEEtran}
 
+\usepackage[
+backend=biber,
+style=ieee
+]{biblatex}
+\addbibresource{ref.bib}
+
 % \usepackage{todonotes}
 % \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
@@ -8,7 +14,6 @@
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
-\usepackage{biblatex}
 \usepackage{ifthen}
 \usepackage{etoolbox}
 \usepackage{hyperref}
@@ -22,7 +27,6 @@
 \usepackage{enumitem}
 
 
-\addbibresource{ref.bib}
 
 % Package to count todos
 
@@ -92,13 +96,12 @@ ikarydis@tudelft.nl}
 
 
 \section{Introduction}
+\label{sec:introduction}
 
 \subsection{Basic Theory of Binary Neural Networks}
 
 
-\todo{rewrite this academically -> Binary Neural Networks (BNNs) are an advanced quantization method for neural networks that offers a unique approach to computation. By quantizing weights to 1-bit, BNNs streamline the multiplication process to produce more efficient results. This innovative method allows for hardware efficiency improvements when compared to traditional quantized and floating-point neural networks.}
-Binary Neural Networks (BNNs) are the ultimate quantization method for neural networks. There is no way of quantizing a weight to lower than 1-bit. Quantizing to 1-bit opens up a unique new way of computation, since instead of any other number of bits representation, 1-bit multiplication with 1-bit produces only 1 bit. Therefore a multiplication can be modelled as a truth table. This opens the possibility of many hardware efficiency improvements over traditional quantized and floating-point neural nets.
-
+Binary Neural Networks (BNNs) are an advanced quantization method for neural networks that offers a unique approach to computation. By quantizing weights to 1-bit, BNNs streamline the multiplication process to produce more efficient results. This innovative method allows for hardware efficiency improvements when compared to traditional quantized and floating-point neural networks.
 
 Overall, BNNs offer a promising approach to developing efficient and high-performance neural networks suitable for a wide range of practical applications. BNNs represent a class of neural networks where weights and activations are constrained to binary values, typically \(\{-1, 1\}\). This binarization facilitates significant computational efficiency, particularly in hardware implementations.
 
@@ -106,80 +109,48 @@ Overall, BNNs offer a promising approach to developing efficient and high-perfor
 
 In BNNs, matrix multiplication involving binary weights and activations can be effectively implemented using XNOR and popcount operations in hardware. The XNOR operation provides a binary equivalence to multiplication, while the popcount function, which counts the number of ones in the result, corresponds to the summation step in matrix multiplication. This approach is computationally efficient and well-suited to hardware accelerators.
 
-\todo{these refs}
-\todo{ref other section}
-This equivalence has been detailed in various studies \cite{placeholder1, placeholder2}, highlighting the advantages of BNNs for high-speed and energy-efficient computations in specialized hardware.
-
-
-
+\todo{these refs} %DONE
+\todo{ref other section} %DONE
+This equivalence has been detailed in various studies \cite{courbariaux2016binarynet}, \cite{simons2019review}, highlighting the advantages of BNNs for high-speed and energy-efficient computations in specialized hardware.
 
 \subsection{Contribution \& Scope of the Project}
+\todo{Rewrite aim, such that our aim was to first achieve a respectable accuracy of 95\% on the MNIST dataset, and then further improve the design to optimize on area, power and minimum achievable clock speed.} %DONE
 
-\todo{Rewrite aim, such that our aim was to first achieve a respectable accuracy of 95\% on the MNIST dataset, and then further improve the design to optimize on area, power and minimum achievable clock speed.}
+\todo{rewrite this part also include: we used MNIST dataset (with reference), testset of 10.000 images.} %DONE
 
-\todo{rewrite this part also include: we used MNIST dataset (with reference), testset of 10.000 images. -> Our project began with the ambitious goal of achieving a significant milestone: attaining a respectable accuracy rate of 95\% on the renowned MNIST dataset, consisting of handwritten digits [1](cite the page of yann lecun??). This task was conducted using a test set comprising 10,000 images, providing a rigorous evaluation of our model's performance.
+%Our project began with the ambitious goal of achieving a significant milestone: attaining a respectable accuracy rate of 95\% on the renowned MNIST dataset, consisting of handwritten digits [1](cite the page of yann lecun??). This task was conducted using a test set comprising 10,000 images, providing a rigorous evaluation of our model's performance.
 
-Moving forward, our project expanded its scope to encompass the optimization of key design parameters, namely area, power efficiency, and the minimum achievable clock speed. This optimization phase represents a critical contribution, as it delves into the intricate balance between computational efficiency and performance within our system.
+%Moving forward, our project expanded its scope to include the optimization of key parameters, namely area, power efficiency, and the minimum achievable clock speed. This optimization phase represents a critical contribution, as it delves into the intricate balance between computational efficiency and performance within our system.
 
-By meticulously fine-tuning these aspects, we aim to not only enhance the overall efficiency of our model but also pave the way for future advancements in machine learning hardware. This holistic approach underscores our commitment to not only achieving high accuracy but also ensuring scalability and practicality in real-world applications.
+%By meticulously fine-tuning these aspects, we aim to not only enhance the overall efficiency of our model but also pave the way for future advancements in machine learning hardware. This holistic approach underscores our commitment to not only achieving high accuracy but also ensuring scalability and practicality in real-world applications.
 
-Furthermore, our project covers both the training and inference phases, providing a comprehensive view of the BNN's practical use and performance. This ensures that our analysis extends beyond mere accuracy metrics, offering insights into the model's effectiveness across various operational contexts.}
+%Furthermore, our project covers both the training and inference phases, providing a comprehensive view of the BNN's practical use and performance. This ensures that our analysis extends beyond mere accuracy metrics, offering insights into the model's effectiveness across various operational contexts.
+
 
 It covers both training and inference phases, providing a complete view of the BNN's practical use and performance.
 
 \subsection{Outline}
-\begin{enumerate}[label=\Roman*.]
-    \item INTRODUCTION
-    \begin{enumerate}[label=\Alph*.]
-        \item \textit{Basic Theory of Binary Neural Networks}
-        \item \textit{Contribution \& Scope of the Project}
-        \item \textit{Outline}
-    \end{enumerate}
-    \item OVERVIEW OF BNN ARCHITECTURE
-    \begin{enumerate}[label=\Alph*.]
-        \item \textit{Training Architecture}
-        \item \textit{Inference Network Architecture}
-    \end{enumerate}
-    \item IMPLEMENTATION OF BNN ARCHITECTURE
-        \begin{enumerate}[label=\Alph*.]
-            \item \textit{Software implementation}
-            \item \textit{Hardware implementation}
-            \item \textit{Optimizations}
-            \begin{enumerate}[label=\arabic*.]
-                \item \textit{Pipelining Popcount}
-                \item \textit{LFSR-Based Majority Classifier}
-            \end{enumerate}
-        \end{enumerate}
-    \item RESULTS
-        \begin{enumerate}[label=\Alph*.]
-            \item \textit{Simulation Setup}
-            \item \textit{Demonstration}
-            \item \textit{Design metric results}
-            \item \textit{General design Trade-Off}
-            \item \textit{Hardware Trade-off Results}
-            \begin{enumerate}[label=\arabic*.]
-                \item \textit{Small section that weight memory is most of the area}
-                \item \textit{XNOR popcount}
-                \item \textit{Matrix 2}
-            \end{enumerate}
-            \item \textit{Accuracy Trade-Off}
-        \end{enumerate}
-    \item CONCLUSIONS
-    \begin{description}
-        \item APPENDIX
-            \begin{enumerate}[label=\Alph*.]
-                \item \textit{First matrix multiplication with activation}
-                \item \textit{maths second matrix}
-            \end{enumerate}
-    \end{description}
-\end{enumerate}
+In this report, we begin with Section \ref{sec:introduction} being an explanation of the basic theory of BNNs. We then discuss the specific contributions and scope of the project, setting the stage for the detailed exploration to follow in this outline.
 
+Section \ref{sec:overview} provides an overview of the BNN architecture, delving into both the training architecture and the inference network architecture. This section lays the groundwork for understanding the detailed implementations and optimizations described later in the report.
+
+In Section \ref{sec:implementation}, we delve into the implementation of the BNN architecture. This section is divided into three main parts: software implementation, hardware implementation, and various optimizations. The optimizations include techniques such as pipelining popcount and using an LFSR-based majority classifier, which are crucial for enhancing the performance of BNNs.
+
+Section \ref{sec:results} presents the results of our work. We start with the simulation setup, followed by a demonstration of the implemented architecture. We then discuss the design metrics and trade-offs involved in the implementation. This includes hardware trade-off results, where we highlight specific aspects such as the area occupied by weight memory, XNOR popcount operations, and matrix computations. Additionally, we analyze the accuracy trade-offs, providing a comprehensive view of the performance and efficiency of our BNN implementation.
+
+In Section \ref{sec:discussion}, we address minor accuracy differences and the potential of overfitting due to hyperparameter tuning. We justify design decisions such as using two matrices for efficiency and avoiding CNNs to maintain operational speed. Additionally, we highlight the significance of managing weight memory and propose a hybrid hardware strategy that balances speed and resource usage for fully connected BNNs.
+
+In Section \ref{sec:conclusions}, we draw conclusions from our work, summarizing the key findings and their implications.
+
+Finally, in Section \ref{sec:future} we highlight avenues for future research in BNN hardware implementation. Firstly, developing a specialized memory library optimized for binary operations could significantly enhance access time and energy efficiency. Secondly, experimenting with an input size of 729 for the XNOR-popcount CSA network may improve computational efficiency and reduce hardware complexity. Lastly, exploring a double precision implementation could enhance numerical stability and accuracy in certain applications, albeit with considerations for trade-offs in area, power, and performance.
+
+The \ref{appendix}ppendix contains supplementary material, including the first matrix multiplication with activation and the mathematical details of the second matrix. References to relevant literature are provided at the end of the report to support the discussions and claims made throughout.
 
 
 \todo{written table of contents for coming sections -> DONE}
 
 \section{Overview of BNN Architecture}
-
+\label{sec:overview}
 \subsection{Training Architecture}
 Section \autoref{ref:why_768} provides a rationale for choosing 768 input values over 784, demonstrating superior performance in our specific context.
 
@@ -194,19 +165,22 @@ The architecture of our training network is outlined as follows:
 \end{itemize}
 
 \subsection{Inference Network Architecture}
+\label{subsec:inference_network_architecture}
 The inference network shares the same mathematical structure as the training network. The primary difference lies in the activation function: the inference network employs a hard activation to constrain outputs strictly to -1 and 1.
 
 
 
 \section{Implementation of BNN architecture}
+\label{sec:implementation}
 \subsection{Software implementation}
 \todo{list learning rate, batch size}
 
-Our BNNs are trained using PyTorch, leveraging the Adam optimizer and CrossEntropy loss function, with one-hot encoded outputs. Prior to training, the input values are rounded to \(\{-1, 1\}\), ensuring the network adapts to these binary inputs. Training is conducted in floating-point representation, with binarization applied post-training.
+Our BNNs are trained using PyTorch\cite{paszke2019pytorch}, leveraging the Adam optimizer\cite{kingma2014adam} and CrossEntropy loss function\cite{mao2023crossentropy}, with one-hot encoded outputs. Prior to training, the input values are rounded to \(\{-1, 1\}\), ensuring the network adapts to these binary inputs. Training is conducted in floating-point representation, with binarization applied post-training.
 
-In the MNIST dataset, the 8-bit input values are pre-processed such that values are mapped to $1$ if $\geq 128$, and to $-1$ otherwise. The HardTanh function is used during training to nudge activations towards hard binary values. 
+In the MNIST dataset, the 8-bit input values are pre-processed such that values are mapped to $1$ if $\geq 128$, and to $-1$ otherwise. The HardTanh function is used during training to nudge activations towards hard binary values. like in paper: \cite{yuan2023comprehensive}
 
 Parallel evaluations using NumPy, simulating the potential BNN's performance, involve rounding matrices to \(\{-1, 1\}\) to validate that inference based on the matrix multiplications using the rounded values aligns with the outcomes predicted by the PyTorch model.
+
 
 
 \subsection{Hardware implementation}
@@ -258,25 +232,45 @@ Instead of performing the popcount in a single clock cycle using a large Carry-S
 \subsubsection{LFSR-Based Majority Classifier}
 
 Initially, individual counters for each digit were used, along with a tree structure to identify the highest count. However, this structure is redundant if the highest count is tracked dynamically. Each counter is compared against the current highest count. If a counter matches the highest count and is to be incremented, the highest count is updated accordingly. This update is achieved by performing a bitwise AND operation between a 10-bit vector indicating counters equal to the highest count and a 10-bit vector indicating counters to be incremented. An OR reduction of this resultant vector determines if the highest count should increase. 
-Ultimately, this approach allows the additional optimization of replacing normal counters with Linear Feedback Shift Register (LFSR) counters, which provide equivalent functionality using less area, as is shown in Section \ref{ref:lfsr_opt}
+Ultimately, this approach allows the additional optimization of replacing normal counters with Linear Feedback Shift Register (LFSR) counters, which provide equivalent functionality using less area \cite{xilinx_lfsr}, as is shown in Section \ref{ref:lfsr_opt}
 
+\subsubsection{Hidden layer size optimization}
+ref to hidden size optimization 
 
 
 \section{Results}
+\label{sec:results}
 \subsection{Simulation Setup}
 
 The initial model, developed in PyTorch, was translated into raw NumPy operations using values of 1 and -1. Upon validation, the NumPy implementation was segmented into the XNOR Popcount and Majority Classifier components.
 
-This segmentation allowed the generation of random test data for both components, output as binary text files containing 0s and 1s. These text files served as inputs for testbenches to validate the functionality of each component individually.
+This segmentation allowed the generation of random test data for both components, output as text files containing 0s and 1s. These text files served as inputs for testbenches to validate the functionality of each component individually.
 
-Additionally, text files for input vectors and corresponding labels were generated using the same method. This enabled testing the entire 10,000-image MNIST testset to verify the device's operation.
+Additionally, text files for input vectors and corresponding labels were generated using the same method. This enabled testing the entire 10,000-image MNIST \cite{mnist} testset to verify the device's operation.
 
-Simulations were executed using GHDL to accelerate the simulation process and facilitate rapid testing iterations.
+Simulations were executed using GHDL \cite{ghdl} to accelerate the simulation process and facilitate rapid testing iterations.
 
 
 
 \subsection{Demonstration}
-\todo{Demonstration show accuracy from simulation}
+This section provides a detailed demonstration of the simulation results. 
+\autoref{fig:waveform} presents a waveform analysis demonstrating that, after the reset signal is set low, the output vector begins displaying which counters are equal to the higest count. When the done signal is high, the output equals to the expected signal, verifying the proper operation of the designed circuit.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.2\textwidth]{./testbench.png}
+    \caption{Testbench output validating the images from the MNIST test set \cite{mnist}.}
+    \label{fig:testbench}
+\end{figure}
+
+\autoref{fig:testbench} displays the output of the testbench, which evaluates the entire set of 10,000 images against the full MNIST test set, confirming the functionality and accuracy of the simulation.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.4\textwidth]{./Waveform_picture.png}
+    \caption{Waveform illustrating the comparison against the output\_row and expected\_row during the simulation of the testbench}
+    \label{fig:waveform}
+\end{figure}
 
 
 
@@ -286,46 +280,33 @@ Simulations were executed using GHDL to accelerate the simulation process and fa
 \subsubsection{Hidden size Optimization}
 
 since our bnn device uses a sequential method for processing the hidden layer, the hidden size can be precisely adjusted to get the best hidden size for a given accuracy.
-Increasing the hidden size both increases the number of clock cycles:  clock cycles inference = hidden size + delay caused by xnor popcount evaluator. where hidden size >> delay cycles>
-Furthermore storing the weights as is discussed in Section \ref{ref:overall_minus_rest}, is the largest contributer for area, power and timing. and the hidden size both affects the matrix 1 and 2 linearly in terms of number of bits needed to store.
+Increasing the hidden size both increases the number of clock cycles:  clock cycles inference = hidden size + delay caused by xnor popcount evaluator. where hidden size >> delay cycles
+Furthermore storing the weights as is discussed in Section \ref{ref:overall_minus_rest}, is the largest contributer for area, power and timing. and the hidden size both affects the matrix 1 and 2 linearly the number of bits needed to store.
 
 Therefore any decrease in hidden size causes a big win in terms of performance on all metrics except accuracy.
 we first did a overview hidden size exploration to get to the 95\% target first.
 
 At first a global overview was done with the hidden sizes of powers of two: 64,128,256,512,1024,2048,4096
-from here it was found that from 1024 it was sufficient since an accuracy of 95\% was achieved seen in \autoref{fig:line_graph_global}
+from here it was found that 1024 was just sufficient since an accuracy of 95\% was achieved seen in \autoref{fig:line_graph_global} <- ./Global_exploration_hidden_sizes.png
 
-next for optimization sake every interval of 32 was tested in between, \autoref{fig:bar_max_achieved_accuracy} shows the max achieved accurcacy for each.
+next for optimization sake every interval of 32 was tested between 512 and 1024 was tested, \autoref{fig:bar_max_achieved_accuracy <- ./Different_hidden_layer_sizes_512_1024.png} shows the max achieved accurcacy for each.
 
-
-
-
-% \todo{why not CNN decision: would probably require somewhere a linear layer anyways, or a large number of layers vastly reducing speed}
-% \todo{somewhere needs to be put a better reasoning why 2 matrices are more efficient: either have 1024 counters = excessive or 1024x768 counts which is slow and area gains are low}
-% The initial goal of our Binary Neural Network (BNN) architecture was to achieve a high level of performance using a single matrix for computations. However, this approach did not meet the target accuracy of 95\%, necessitating exploration of alternative designs.
-% Subsequent experiments with two matrices in the network structure suggested that this configuration could offer a similar level of computational efficiency while potentially improving accuracy. 
-% \textit{Results pending. This section will present accuracy metrics for different network configurations once available.}
-% \todo{lower hidden size, would drop accuracy too much}
-% \todo{lower input size also}
- 
+From that it was discovered that 608 as a hidden size also reached our target of 95\%. This means 
 
 
 
-
-
-
- 
-
-% \todo{subsection accuracy}
-
-% Due to our rigorous testbenches, the accuracy from the raw numpy matrices and the testbench simulation was exactly equal.
 
 
 \subsection{Hardware metric results}
 
 - text showing overall area, power, timing
 
-\todo{Overall}
+\todo{Overall 1024}
+  \todo{subsection area}
+  \todo{subsection power}
+  \todo{subsection timing}
+
+\todo{Overall 608 after optimization}
   \todo{subsection area}
   \todo{subsection power}
   \todo{subsection timing}
@@ -350,7 +331,9 @@ next for optimization sake every interval of 32 was tested in between, \autoref{
   \todo{subsection area}
   \todo{subsection power}
   \todo{subsection timing}
+
 \label{ref:exploration_pipelining}
+
 \todo{Explanation of results:}
 \todo{0 levels and 1 levels a wide number of valid divisors of 768 were tested and shown her}
 \todo{2 and 3 levels have too large exploration space thus first a reasonable setup was chosen and then for each additional test, only the part where the lowest slack was changed}
@@ -362,6 +345,10 @@ next for optimization sake every interval of 32 was tested in between, \autoref{
 	% 	- [ ] 1 level
 	% 	- [ ] 2 levels
 	% 	- [ ] 3 levels
+
+it is often good practise to start with the simpelest model and then later optimize. 
+
+
 
 \subsubsection{Majority classifier}
 \label{ref:lfsr_opt}
@@ -381,30 +368,64 @@ next for optimization sake every interval of 32 was tested in between, \autoref{
 
 
 \section{Discussion}
-	%   - [ ] accuracy differences were not that great and partially due to random chance
+\label{sec:discussion}
+\todo{timing is slower in lower hidden size}
+
+%   - [ ] accuracy differences were not that great and partially due to random chance
 	% - [ ] Hyperparameter tuning might be overfitting on the testset
-
-	% - [ ] Rationale
-	%   - [ ] somewhere needs to be put a better reasoning why 2 matrices are more efficient: either have 1024 counters = excessive or 1024x768 counts which is slow and area gains are low
-	% 	- [ ] why not CNN decision: would probably require somewhere a linear layer anyways, or a large number of layers vastly reducing speed
-	% 	- [ ] Small section that weight memory is most of the area
+    \subsection{Accuracy Differences and Hyperparameter Tuning}
+    The observed differences in accuracy were not substantial and might be attributed to random variations rather than significant improvements or degradations in performance. Additionally, there is a possibility that hyperparameter tuning may have led to overfitting on the test set. This means that while the model performs well on the specific test data, it may not generalize as effectively to new, unseen data.
+    % - [ ] Rationale
+    \subsection{Rationale for Design Decisions}
+    %   - [ ] somewhere needs to be put a better reasoning why 2 matrices are more efficient: either have 1024 counters = excessive or 1024x768 counts which is slow and area gains are low
+    \begin{itemize}
+        \item Efficiency of Two Matrices
+        Using two matrices is more efficient for several reasons. Employing 1024 counters is considered excessive in terms of hardware resources. Additionally, utilizing 1024x768 counts can be slow and offers minimal area gains, making it an inefficient choice.
+         % 	- [ ] why not CNN decision: would probably require somewhere a linear layer anyways, or a large number of layers vastly reducing speed
+        \item Decision Against Using CNN
+        Implementing a CNN would likely require a linear layer at some stage or a substantial number of layers, which would significantly reduce speed. The potential complexity and depth of CNNs would lead to a decrease in operational speed, making them less suitable for the intended application.
+         % 	- [ ] Small section that weight memory is most of the area
+        \item Impact of Weight Memory
+        Weight memory constitutes a significant portion of the total area. Managing and optimizing weight memory is crucial to maintaining an efficient design.
+    \end{itemize}
 	%     - [ ] section on hardware possible strategies given Fully connected bnn
-	% 	    - [ ] subsubsection strategy do everything sequentially
-	% 	    - [ ] subsubsection strategy do everything in parallel in one tick
-	% 	    - [ ] subsubsection strategy mixed approach, since parallel would be huge and sequentially would be unneccesary slow for little area and power gains due to weights storage that is mandatory
-
+    \subsection{Hardware Possible Strategies for Fully Connected BNN}
+    \begin{itemize}
+        % 	    - [ ] subsubsection strategy do everything sequentially
+        \item Sequential Strategy
+        Performing all operations sequentially is a simpler approach but might be unnecessarily slow. It offers minimal area and power savings due to the mandatory weight storage requirements.
+        % 	    - [ ] subsubsection strategy do everything in parallel in one tick
+        \item Parallel Strategy
+        Executing all operations in parallel within a single clock tick can be extremely fast. However, this method requires a large amount of hardware resources, making it impractical for many applications due to its substantial area and power demands.
+        % 	    - [ ] subsubsection strategy mixed approach, since parallel would be huge and sequentially would be unneccesary slow for little area and power gains due to weights storage that is mandatory
+        \item Mixed Strategy
+        The hybrid approach to processing combines elements of both sequential and parallel processing strategies. By blending these methods, it seeks to leverage the strengths of each while mitigating their respective drawbacks. This approach aims to strike a balance between speed and resource usage, optimizing performance without excessively draining area and power. It aims to avoid the inefficiencies inherent in purely sequential processing, such as long execution times, while also sidestepping the challenges of purely parallel processing, such as increased complexity and potential bottlenecks. Ultimately, the hybrid approach offers a compromise solution that aims to deliver efficient and effective processing capabilities across various applications and domains.
+    \end{itemize}
 \section{Conclusions}
+\label{sec:conclusions}
 	- [ ] exploration of multiple hidden sizes was very benificial
 	- [ ] timing bottleneck mostly from memory
 
-\todo{future work}
-	- [ ] subsection better memory library
-	- [ ] subsection also try 729 as input size for xnor popcount csa network
-	- [ ] subsection double is done
 
+\todo{future work}
+	- [done ] subsection better memory library
+	- [done ] subsection also try 729 as input size for xnor popcount csa network
+
+\section{future work}
+\label{sec:future}
+	\subsection{Better Memory Library}
+Improving the memory library is an important step for future implementations of the BNN. In this paper, the memory components in our design are based on standard libraries, which may not be optimized for the specific needs of BNN operations. By developing or integrating a specialized memory library specifically for binary operations, we can significantly reduce the access time and energy consumption. This specialized memory can include optimized SRAM or emerging memory technologies like ReRAM, which are more suited for the frequent read-write cycles in BNN computations. A better memory library will contribute to lower latency and higher efficiency, ultimately improving the overall performance of the BNN hardware.
+
+	\subsection{Input Size Optimization with 729}
+Another promising area for future work is experimenting with an input size of 729 for the XNOR-popcount CSA network. This might enhance the alignment and efficiency of the XNOR and popcount operations. This approach could lead to more balanced computational loads and possibly reduce the overall hardware complexity. Testing this input size may uncover further optimizations in terms of area and power without compromising accuracy.
+
+\printbibliography
+
+\newpage
 
 
 \appendix
+\label{appendix}
 
 \section{Mathematical Foundations for Hardware Implementations}
 
@@ -415,7 +436,7 @@ next for optimization sake every interval of 32 was tested in between, \autoref{
 This section demonstrates that performing matrix-vector multiplication followed by a hard activation is equivalent to using XNOR operations, popcount, and a subsequent comparison.
 The matrix-vector multiplication \(\mathbf{A} \mathbf{b}\) shown in Equation \ref{eq:matrix_vector_multiplication} results in a vector \(\mathbf{c}\). Each element \(c_i\) of this vector is obtained by the dot product of the \(i\)-th row of matrix \(\mathbf{A}\) with vector \(\mathbf{b}\), as described in Equation \ref{eq:dot_product}. This can be further expanded into component-wise multiplication and summation (Equation \ref{eq:component_wise_dot}). When elements \(a_{ij}\) and \(b_j\) are binary (\(1\) or \(-1\)), we map them to \(1\) and \(0\) respectively, as shown in Equation \ref{eq:mapping}, enabling the use of XNOR for the multiplication, as described in Equation \ref{eq:xnor}.
 
-\begin{figure}[h]
+\begin{figure}[ht]
     \centering
     \begin{equation}
     \mathbf{c} = \mathbf{A} \mathbf{b}
@@ -454,7 +475,7 @@ The matrix-vector multiplication \(\mathbf{A} \mathbf{b}\) shown in Equation \re
 \end{figure}
 
 
-\begin{figure}[h]
+\begin{figure}[ht]
     \centering
     \begin{equation}
     c = \sum_{i=1}^n a_i b_i
@@ -513,17 +534,10 @@ In Figure \ref{fig:dot_product_activation}, Equation \ref{eq:dot_product_sum} su
 
 
 
-
-\printbibliography
-
+\vspace{12pt}
 \showtodocount
 
-\newpage
 
 \end{document}
-
-
-
-
 
 
