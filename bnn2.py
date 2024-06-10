@@ -367,7 +367,7 @@ def perform(hidden_size, epoch=None):
         torch.save(model.state_dict(), 'bnn_model.pth')
 
     model = BNN(hidden_size=hidden_size)
-    model.load_state_dict(torch.load('bnn_model.pth'))
+    model.load_state_dict(torch.load('bnn_model_956.pth'))
 
     # Testing the BNN
     model.eval()

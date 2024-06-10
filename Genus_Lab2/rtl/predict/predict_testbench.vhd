@@ -65,8 +65,8 @@ begin
 
     -- Test process
     process
-        file testdata : text open read_mode is  "/pwd/predict/examples/1_test_data_bin.txt";
-        file labeldata : text open read_mode is "/pwd/predict/examples/1_test_labels_bin.txt";
+        file testdata : text open read_mode is  "/pwd/predict/examples/all_test_data_bin.txt";
+        file labeldata : text open read_mode is "/pwd/predict/examples/all_test_labels_bin.txt";
 
 
         variable line_in : line;

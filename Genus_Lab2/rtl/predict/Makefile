@@ -28,9 +28,9 @@ elaborate: analyze
 # Run the simulation
 run: elaborate
 	@echo "Running $(TESTBENCH)..."
-	@cd $(WORKDIR) && $(GHDL_CMD) -r $(GHDL_FLAGS) $(TESTBENCH) --wave=$(TESTBENCH).ghw & \
+	@cd $(WORKDIR) && $(GHDL_CMD) -r $(GHDL_FLAGS) $(TESTBENCH) & \
 	PID=$$!; trap "echo 'Stopping GHDL...'; kill $$PID" INT; wait $$PID
-	# @cd $(WORKDIR) && $(GHDL_CMD) -r $(GHDL_FLAGS) $(TESTBENCH) & \
+	# @cd $(WORKDIR) && $(GHDL_CMD) -r $(GHDL_FLAGS) $(TESTBENCH) --wave=$(TESTBENCH).ghw & \
 
 # Clean up generated files
 clean:
