@@ -1,5 +1,6 @@
 % -- just a two column document
 \documentclass[conference]{IEEEtran}
+% \documentclass[twocolumn]{tudelft-aiaa}
 
 \usepackage[
 backend=biber,
@@ -83,11 +84,13 @@ ikarydis@tudelft.nl}
 }
 
 \begin{document}
+\AlwaysPagewidth{
 \maketitle
 
 
 \begin{abstract}
 \end{abstract}
+}
 
 \todo{general todos}
 \todo{work out all todos}
@@ -233,9 +236,10 @@ The Majority Classifier activates if the validity bit is set. Upon activation, i
 Instead of performing the popcount in a single clock cycle using a large Carry-Save Adder (CSA) network, our exploration in \autoref{ref:exploration_pipelining} determined that a pipelined approach with four registers between the adder stages is optimal. Thus, the popcount result becomes valid after $n=4$ cycles, with subsequent cycles producing new valid sums.
 
 \subsubsection{LFSR-Based Majority Classifier}
+\label{ref:lfsr_opt}
 
 Initially, individual counters for each digit were used, along with a tree structure to identify the highest count. However, this structure is redundant if the highest count is tracked dynamically. Each counter is compared against the current highest count. If a counter matches the highest count and is to be incremented, the highest count is updated accordingly. This update is achieved by performing a bitwise AND operation between a 10-bit vector indicating counters equal to the highest count and a 10-bit vector indicating counters to be incremented. An OR reduction of this resultant vector determines if the highest count should increase. 
-Ultimately, this approach allows the additional optimization of replacing normal counters with Linear Feedback Shift Register (LFSR) counters, which provide equivalent functionality using less area \cite{xilinx_lfsr}, as is shown in Section \ref{ref:lfsr_opt}
+Ultimately, this approach allows the additional optimization of replacing normal counters with Linear Feedback Shift Register (LFSR) counters, which provide equivalent functionality using less area \cite{xilinx_lfsr}, as is shown in Section \ref{ref:hardware_metrics}
 
 \subsubsection{Hidden layer size optimization}
 ref to hidden size optimization 
@@ -278,132 +282,219 @@ This section provides a detailed demonstration of the simulation results.
 
 
 
-\subsection{Accuracy Metrics}
+% \subsection{Hardware metric results}
 
-\subsubsection{Hidden size Optimization}
+% This section discussed the achieved results of timing, area, power and accuracy. we present 3 optimizations: one in the hidden size, one in the popcount summing and finally one with the majority classification. Only the first optimization changes the accuracy, the rest solely affects timing, area and power. (also ref to the table saying here is table blab blab)
 
-since our bnn device uses a sequential method for processing the hidden layer, the hidden size can be precisely adjusted to get the best hidden size for a given accuracy.
-Increasing the hidden size both increases the number of clock cycles:  clock cycles inference = hidden size + delay caused by xnor popcount evaluator. where hidden size >> delay cycles
-Furthermore storing the weights as is discussed in Section \ref{ref:overall_minus_rest}, is the largest contributer for area, power and timing. and the hidden size both affects the matrix 1 and 2 linearly the number of bits needed to store.
-
-Therefore any decrease in hidden size causes a big win in terms of performance on all metrics except accuracy.
-we first did a overview hidden size exploration to get to the 95\% target first.
-
-At first a global overview was done with the hidden sizes of powers of two: 64,128,256,512,1024,2048,4096
-from here it was found that 1024 was just sufficient since an accuracy of 95\% was achieved seen in \autoref{fig:line_graph_global} <- ./Global_exploration_hidden_sizes.png
-
-next for optimization sake every interval of 32 was tested between 512 and 1024 was tested, \autoref{fig:bar_max_achieved_accuracy <- ./Different_hidden_layer_sizes_512_1024.png} shows the max achieved accurcacy for each.
-
-From that it was discovered that 608 as a hidden size also reached our target of 95\%. This means 
+% // table: Run name	Popcount levels	Hidden size	Area	Power	Accuracy%	Clock period (ns)	Required clock cycles	Inference time (ns)
+% original design	0	1024	113127.406	1.50E-02	95.07	2.984	1025	3059
+% hidden size optimization	0	608	68376.63	1.11E-02	95.65	3.296	609	2007
+% level optimization	3	608	73059.028	1.16E-02	95.65	2.842	612	1739
+% lfsr optimization	3	608	70088.07	1.13E-02	95.65	2.678	612	1639
 
 
 
+% \subsubsection{Hidden size Optimization}
+
+% since our bnn device uses a sequential method for processing the hidden layer, the hidden size can be precisely adjusted to get the best hidden size for a given accuracy.
+% Increasing the hidden size both increases the number of clock cycles:  clock cycles inference = hidden size + delay caused by xnor popcount evaluator. where hidden size >> delay cycles
+% Furthermore storing the weights as is discussed in Section \ref{ref:overall_minus_rest}, is the largest contributer for area, power and timing. and the hidden size both affects the matrix 1 and 2 linearly the number of bits needed to store.
+
+% Therefore any decrease in hidden size causes a big win in terms of performance on all metrics except accuracy.
+% we first did a overview hidden size exploration to get to the 95\% target first.
+
+% At first a global overview was done with the hidden sizes of powers of two: 64,128,256,512,1024,2048,4096
+% from here it was found that 1024 was just sufficient since an accuracy of 95\% was achieved seen in \autoref{fig:line_graph_global} <- ./Global_exploration_hidden_sizes.png
+
+% next for optimization sake every interval of 32 was tested between 512 and 1024 was tested, \autoref{fig:bar_max_achieved_accuracy <- ./Different_hidden_layer_sizes_512_1024.png} shows the max achieved accurcacy for each.
+
+% From that it was discovered that 608 as a hidden size also reached our target of 95\% with an even greater accuracy of 95.65\%
 
 
-\subsection{Hardware metric results}
 
-- text showing overall area, power, timing
 
-\todo{Overall 1024}
-  \todo{subsection area}
-  \todo{subsection power}
-  \todo{subsection timing}
+% \subsection{Note on input size}
+% \label{ref:why_768}
 
-\todo{Overall 608 after optimization}
-  \todo{subsection area}
-  \todo{subsection power}
-  \todo{subsection timing}
+% Early in the design phase it was decided to use 768 instead of 784 as an input size. this was done because 768 is a much nicer number in binary and for hardware: \(768 = 512 + 256 = 2^9 + 2^8\) than 28x28=784. 
+% To convert the 28*28 picture to 768 inputs, the last inputs were just dropped. in the python testing this had no impact on the accuracy. a design with 784 was never synthesized due to this early decision
 
-\label{ref:overall_minus_rest}
-\todo{Overall - rest} % register files part + counters
-  \todo{subsection area}
-  \todo{subsection power}
-  \todo{subsection timing}
+\subsection{Hardware Metric Results}
+\label{ref:hardware_metrics}
 
-\todo{Theoritical inference performance}
+This section presents the results achieved in terms of timing, area, power, and accuracy. Among these, only the first optimization impacts accuracy; the latter two affect timing, area, and power metrics exclusively. A comparison of these optimizations for the total metrics is summarized in Table \ref{tab:optimization_metrics}. 
 
-\subsection{Hardware Trade-off Results}
+\todo{power to joules}
 
-	% - [ ] full design
-	% 	- [ ] note on how memory is most of the area
-\subsubsection{XNOR popcount}
+\begin{table}[h]
+    \centering
+    \caption{Comparison of Hardware Metrics Across Different Optimizations, including inference time}
+    \label{tab:optimization_metrics}
+    \begin{tabular}{@{}ccccccccc@{}}
+        \toprule
+        \textbf{Optimization} & \textbf{Area ($\mu m^2$)} & \textbf{Power (W)} & \textbf{Accuracy (\%)} & \textbf{Inference (ns)}  \\
+        \midrule
+        Original & 113127 & 1.50E-02 & 95.07 & 2.984 \\
+        Hidden Size & 68377 & 1.11E-02 & 95.65 & 3.296 \\
+        Level & 73059 & 1.16E-02 & 95.65 & 2.842 \\
+        LFSR & 70088 & 1.13E-02 & 95.65 & 2.678 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\autoref{tab:hardware_metrics} illustrates that the bulk of the area and power consumption is attributed to the weight storage in the register files. It is evident that the XNOR popcount optimization, detailed in Section \ref{ref:xnor_popcount}, results in increased area and power but enhances the timing slack. Conversely, the majority classifier optimization, as discussed in Section \ref{ref:lfsr_opt}, improves area, power, and timing slack across all metrics. Similarly, optimizing the hidden size optimizes the register files, thereby reducing timing slack, although it also incurs increases in area and power.
+
+\begin{table}[h]
+    \centering
+    \caption{Hardware Metrics for Device Parts: Impact of Optimizations}
+    \label{tab:hardware_metrics}
+    \begin{tabular}{@{}lcccc@{}}
+        \toprule
+        \textbf{Device Part} & \textbf{Area (\(\mu m^2\))} & \textbf{Power (W)} & \textbf{Time Slack (ps)} \\
+        \midrule
+        Register Files Old & 104334 & 1.36E-02 & 7016 \\
+        Register Files New & 62653 & 1.00E-02 & 6704 \\
+        XNOR Popcount Old & 4487 & 7.30E-04 & 7957 \\
+        XNOR Popcount New & 6095 & 1.08E-03 & 8973 \\
+        Majority Classifier Old & 4307 & 6.86E-04 & 8825 \\
+        Majority Classifier New & 1340 & 2.38E-04 & 9046 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{Note on Input Size}
+\hfill\\
 \label{ref:why_768}
-% To further optimize the input dimensions, we reduced the number of inputs from 784 to 768 by dropping the last 16 inputs. This simplification leverages the powers of two, specifically \(768 = 512 + 256 = 2^9 + 2^8\), which can simplify the hardware and align more efficiently with binary operations. This reduction did not impact performance.
 
-\label{ref:exploration_pipelining}
-
-
-it is often good practise to start with the simpelest model and then later optimize. first we just used a full direct csa tree for the popcount. Then to decrease the minimum slack needed, differing number of pipeline stages where added inside the adder network. 
+During the design phase, the input size was set to 768 instead of 784 to align with hardware efficiency, as 768 (\(2^9 + 2^8\)) simplifies binary implementation. The 28x28 input image was truncated to 768 inputs by excluding the last 16 pixels. Empirical testing confirmed no accuracy impact, hence, 784-input designs were not pursued.
 
 
-First just the xnor popcount was synthesized using the genus \cite{genus} tool to speed up the exploration step.
+\subsection{Hidden Size Optimization}
 
-// make table in latex from this : Direct CSA sum
-Area	Timing	Power
-	4486.888	7957	7.30E-04
+Given that our Binary Neural Network (BNN) device employs a sequential approach for processing the hidden layer, it is crucial to finely tune the hidden size to balance accuracy and hardware efficiency. Increasing the hidden size directly correlates with an increase in the number of clock cycles required for inference.
+Since the hidden size affects both the first and second weight register files proportionally, any reduction in hidden size guarantees substantial gains across all hardware metrics except accuracy.
 
+An initial broad exploration was conducted using hidden sizes that are powers of two: 64, 128, 256, 512, 1024, 2048, 4096. From this analysis, it was determined that a hidden size of 1024 was sufficient to achieve the target accuracy of 95\%, as illustrated in \autoref{fig:line_graph_global}.
 
-// it needs to be more clear what the 16,64 and 256 mean here. so we start at the input which is the xnor output vector from \autoref{fig:xnor_popcount}. Then instead of having one csa tree to the output sum, there are multiple trees. so for 64 is meant that there are 768/64 = 12 sum registers in the in between level, that can each count up to max 64. then for each 64 bits in the xnor vector a csa tree is made to each in between sum register. then from the in between level to the output there is another csa tree adding the in between registers up to the output sum. the csa tree is not decided by us, but by the genus tool itself, since in most cases the synthesize tool knows best which type of tree to use.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.4\textwidth]{Global_exploration_hidden_sizes.png}
+    \caption{Global exploration of hidden sizes and their impact on accuracy.}
+    \label{fig:line_graph_global}
+\end{figure}
 
-Next an exploration was done using one in between level of several different sum ranges: [16,32,48,64,96,128,192,256] where for instance 16 means that the registers can store a maximum of count 16 thus requiring 4 bits.
+For further optimization, the hidden size was refined in increments of 32 between 512 and 1024. The maximum achieved accuracy for each hidden size within this range is depicted in \autoref{fig:bar_max_achieved_accuracy}. Through this fine-grained exploration, a hidden size of 608 was identified as optimal, reaching the target accuracy of 95\% with a slight improvement to 95.65\%.
 
-// make table in latex from this : CSA one pipelined register, include the one with NA (they are added in later)
-Area	Timing	Power		Max sum
-6664.63	8318	1.30E-03		16
-5739.482	8458	1.06E-03		32
-5298.986	8604	9.40E-04		48
-5241.796	8618	9.58E-04		64
-4986.702	8528	8.79E-04		96
-4937.758	8457	8.47E-04		128
-4793.054	8251	8.41E-04		192
-NA	NA	NA		256
-NA	NA	NA		384
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.4\textwidth]{Different_hidden_layer_sizes_512_1024.png}
+    \caption{Maximum achieved accuracy for different hidden layer sizes between 512 and 1024.}
+    \label{fig:bar_max_achieved_accuracy}
+\end{figure}
 
+\subsection{XNOR popcount Optimization}
+\label{ref:xnor_popcount}
 
-// now it needs to be extra clear that in the 2+ levels it is meant that for instance the 256 on level 2 means that the sum registers on that level can count up to 256. so for level 1 64 and level 2 256 it is meant that the registers in level 2 add up 256/64 registers from level 1
-Next two levels were explored, however since exploring all different combinations would take very long, a compromise was reached.
-the test was started by interjecting an addition level of sum register with max 256 between the 64 and output sum, where 64 was the best in terms of timing from the previous test.
-then for each next test it was seen between which two levels the timing was worst, so for instance for the level 1 at 64 and level 2 at 256 the worst timing was between the input and 64, therefore for the next
-test level 1 was changed to 16 etc....
-each of these decisions was made solely on the timing, since area and power were mostly dominated by the memory footprint seen in \ref{ref:overall_minus_rest}
+This section explores optimizing the XNOR popcount module with a focus on reducing timing slack to enhance clock speed. Given that the majority of area and power consumption arises from the register files, as indicated in \ref{ref:hardware_metrics}, the strategy centered on minimizing slack to improve performance efficiency.
 
-// two level explo
-Area	Timing	Power	Max sum level 1	Max sum level 2	Worst timing
-5364.688	8617	1.01E-03	64	256	input -> 64
-6864.928	8740	1.36E-03	16	256	16 -> 256
-5526.15	8750	9.84E-04	48	192	input -> 48
-5960.262	8834	1.11E-03	32	192	input -> 32
-5998.832	8851	1.07E-03	24	192	192 -> output sum
-5899.614	8740	1.05E-03	24	384	24 -> 384
+\subsubsection{Initial Approach: Direct CSA Tree Implementation}
+\hfill\\
+
+The initial exploration of the XNOR popcount involved synthesizing a direct Carry-Save Adder (CSA) tree to provide a foundational understanding of the basic performance metrics. This method utilizes a full direct CSA tree to compute the population count. Only the XNOR popcount part was synthesized, which facilitated a more rapid assessment. The results for this direct CSA implementation, including area, timing, and power, are summarized in Table \ref{tab:direct_csa}. This direct implementation serves as a reference point before introducing pipelining for performance improvements.
 
 
-since from the table of two levels 24,192 was best with the worst timing being 192->output and when doing 24,384 was 24->384 worst timing: in the three levels 24,192,384 was tried first.
-now since 384->output is the worst timing, the timing can't be improved since there is no other division of 768 that is greater than 384.
-To further optimize also 16,192,384 and 16,128,384 were tested to observe further area improvements, but both of them had worse timing than the initial 24,192,384 so that was chosen finally
+\begin{table}[h]
+    \centering
+    \caption{Metrics for Direct CSA Tree Implementation}
+    \label{tab:direct_csa}
+    \begin{tabular}{@{}ccc@{}}
+        \toprule
+        \textbf{Area ($\mu m^2$)} & \textbf{Timing (ps)} & \textbf{Power (W)} \\
+        \midrule
+          4487 & 7957 & 7.30E-04 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
-// level 3 explo
-				Level 1	Level 2	Level 3	Worst timing
-3	6095.39	8973	1.08E-03	24	192	384	384->output
-	NA	NA	NA	16	192	384	NA
-3	7108.318	8979	1.40E-03	16	128	384	16->128
+
+\subsubsection{First-Level Pipelining Exploration}
+\hfill\\
+
+To optimize performance and reduce the required minimum slack, pipelining stages were introduced within the CSA network. This exploration started by examining a single intermediary level of sum registers. These registers accumulate counts up to a specified maximum before passing their sum to the next stage. For example, a configuration with a maximum sum of 64 means that the CSA tree computes partial sums of the XNOR output vector in chunks of 64, leading to intermediate registers each counting up to 64. These intermediate sums are then aggregated by another CSA tree to produce the final output sum. Various configurations were explored, where the maximum sums ranged from 16 to 384. Table \ref{tab:first_level} presents the area, timing, and power metrics for these configurations.
 
 
+\begin{table}[h]
+    \centering
+    \caption{Metrics for CSA Tree with One Level of Pipelining}
+    \label{tab:first_level}
+    \begin{tabular}{@{}ccccc@{}}
+        \toprule
+        \textbf{Max Sum} & \textbf{Area ($\mu m^2$)} & \textbf{Timing (ps)} & \textbf{Power (W)} \\
+        \midrule
+        16 & 6664.63 & 8318 & 1.30E-03 \\
+        32 & 5739.482 & 8458 & 1.06E-03 \\
+        48 & 5298.986 & 8604 & 9.40E-04 \\
+        64 & 5241.796 & 8618 & 9.58E-04 \\
+        96 & 4986.702 & 8528 & 8.79E-04 \\
+        128 & 4937.758 & 8457 & 8.47E-04 \\
+        192 & 4793.054 & 8251 & 8.41E-04 \\
+        256 & NA & NA & NA \\
+        384 & NA & NA & NA \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{Two-Level Pipelining Exploration}
+\hfill\\
+
+To further refine the pipelining strategy, a two-level configuration was tested. Due to the extensive nature of possible combinations, a targeted exploration approach was used. This began with the insertion of an additional level of sum registers, capable of holding up to 256 counts, between the initial sum of 64 and the final output sum from the best performing configuration in Table \ref{tab:first_level}. Each test subsequently modified the maximum sum at the stage exhibiting the worst timing in the previous test. For example, in the configuration where Level 1 had a maximum sum of 64 and Level 2 had 256, the worst timing was observed between the input and the 64-bit stage. This led to the next test where the Level 1 sum was reduced to 16. The configurations explored and their results are detailed in Table \ref{tab:two_level}. This iterative approach aimed to minimize the worst timing while considering area and power metrics.
 
 
+\begin{table}[h]
+    \centering
+    \caption{Metrics for CSA Tree with Two Levels of Pipelining}
+    \label{tab:two_level}
+    \begin{tabular}{@{}cccccc@{}}
+        \toprule
+        \textbf{Levels} & \textbf{Area ($\mu m^2$)} & \textbf{Timing (ps)} & \textbf{Power (W)} & \textbf{Worst} \\
+        \midrule
+        64, 256 & 5365 & 8617 & 1.01E-03 & input $\rightarrow$ 64 \\
+        16, 256 & 6865 & 8740 & 1.36E-03 & 16 $\rightarrow$ 256 \\
+        48, 192 & 5526 & 8750 & 9.84E-04 & input $\rightarrow$ 48 \\
+        32, 192 & 5960 & 8834 & 1.11E-03 & input $\rightarrow$ 32 \\
+        24, 192 & 5999 & 8851 & 1.07E-03 & 192 $\rightarrow$ out\\
+        24, 384 & 5900 & 8740 & 1.05E-03 & 24 $\rightarrow$ 384 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
+\subsubsection{Three-Level Pipelining Exploration}
+\hfill\\
 
-\subsubsection{Majority classifier}
-\label{ref:lfsr_opt}
+Finally, a three-level pipelining configuration was investigated to achieve further optimization. Starting with the best-performing two-level configuration (24 for Level 1 and 192 for Level 2), a third level was added with the maximum sum set to 384. The rationale was to mitigate the worst timing observed at the 192 to output transition by adding another intermediary stage. Subsequent configurations tested included 24, 192, 384, and 16, 128, 384 to observe the effects on area and timing. The configuration of 24 for Level 1, 192 for Level 2, and 384 for Level 3 demonstrated the best balance across area, timing, and power, making it the chosen configuration. 
 
-\todo{Majority Classifier non lfsr}
-  \todo{subsection area}
-  \todo{subsection power}
-  \todo{subsection timing}
-\todo{Majority Classifier with lfsr optimization}
-  \todo{subsection area}
-  \todo{subsection power}
-  \todo{subsection timing}
+Introducing an additional layer does not yield better timing performance, as the critical timing slack occurs between the 384 sum level and the output. Given that 768 cannot be divided into larger segments than 384, further division does not mitigate this bottleneck. 
+The results for the three-level pipelining exploration are provided in Table \ref{tab:three_level}.
 
+\begin{table}[h]
+    \centering
+    \caption{Metrics for CSA Tree with Three Levels of Pipelining}
+    \label{tab:three_level}
+    \begin{tabular}{@{}ccccccc@{}}
+        \toprule
+        \textbf{Levels} & \textbf{Area ($\mu m^2$)} & \textbf{Timing (ps)} & \textbf{Power (W)} & \textbf{Worst} \\
+        \midrule
+        24, 192, 384 & 6095 & 8973 & 1.08E-03 & 384 $\rightarrow$ out\\
+        16, 192, 384 & NA & NA & NA & NA \\
+        16, 128, 384 & 7108 & 8979 & 1.40E-03 & 16 $\rightarrow$ 128 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{Conclusion XNOR Popcount exploration}
+\hfill\\
+
+Through methodical exploration of various pipelining levels, the implementation of intermediary sum registers proved effective in enhancing the XNOR popcount performance. The three-level configuration with maximum sums of 24, 192, and 384 provided the most optimal trade-off between area, timing, and power, as indicated by the iterative testing and metrics obtained.
 
 
 
@@ -446,7 +537,8 @@ To further optimize also 16,192,384 and 16,128,384 were tested to observe furthe
 \section{Conclusions}
 \label{sec:conclusions}
 	- [ ] exploration of multiple hidden sizes was very benificial
-	- [ ] timing bottleneck mostly from memory
+	- [ ] overall bottleneck mostly from memory
+	- [ ] optimization caused 2x performance increase and 38\% reduction in size and XXX\% reduction of joules per inference
 
 
 \todo{future work}

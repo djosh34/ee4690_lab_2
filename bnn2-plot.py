@@ -84,13 +84,13 @@ if __name__ == "__main__":
     folder_path = "save_accuracy"  # Update this to your actual folder path
 
     # Define hidden sizes inside main block
-    # hidden_sizes = [x for x in range(512, 1024, 32)]
+    hidden_sizes = [x for x in range(512, 1024, 32)]
 
     # hidden_sizes = [64, 128, 256, 512]
     # hidden_sizes = hidden_sizes + [768, 768 + 1 * 32, 768 + 2 * 32, 768 + 3 * 32, 768 + 4 * 32, 768 + 5 * 32, 768 + 6 * 32, 768 + 7 * 32,
     #                 768 + 8 * 32]
     # hidden_sizes = hidden_sizes + [1024 + 1 * 256, 1024 + 2 * 256, 1024 + 3 * 256, 1024 + 4 * 256]
-    hidden_sizes = [64, 256, 512, 1024, 2048, 4096]
+    # hidden_sizes = [64, 256, 512, 1024, 2048, 4096]
 
     results = load_data(folder_path, hidden_sizes)
 
