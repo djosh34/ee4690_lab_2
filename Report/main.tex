@@ -1,4 +1,5 @@
-% -- just a two column document
+
+ % -- just a two column document
 \documentclass[conference]{IEEEtran}
 % \documentclass[twocolumn]{tudelft-aiaa}
 
@@ -19,7 +20,9 @@ style=ieee
 \usepackage{etoolbox}
 \usepackage{hyperref}
 % \maxdeadcycles=200
+\usepackage{tocloft}
 
+ \usepackage{booktabs}
 
 % Package for better math typesetting
 \usepackage{amsmath}
@@ -72,7 +75,7 @@ j.r.azimullah@tudelft.nl}
 \and
 \IEEEauthorblockN{Pieter Becking}
 \IEEEauthorblockA{4685377\\
-PBecking@tudelft.nl}
+pbecking@tudelft.nl}
 \and
 \IEEEauthorblockN{Christian van den Berg}
 \IEEEauthorblockA{5401674\\
@@ -96,7 +99,6 @@ ikarydis@tudelft.nl}
 \todo{Each section in the beginning describes what it will say}
 \todo{Connecting signal words?}
 
-
 \section{Introduction}
 \label{sec:introduction}
 
@@ -111,7 +113,7 @@ The objective of this project is to develop a BNN device utilizing the Genus \ci
 \section{Outline}
 \label{sec:outline}
 
-Section \ref{sec:overview} provides an overview of the BNN architecture. Section \ref{sec:implementation} details the software and hardware implementation strategies used for the BNN, including training methodologies and tooling for device synthesis. Section \ref{sec:results} presents the results, including simulation setups, demonstration outputs, and optimization explorations. Finally, Section \ref{sec:discussion} discusses the design choices and observed variabilities, and Section \ref{sec:conclusions} concludes with the success of the project and potential areas for future work, as expanded in Section \ref{sec:future}. The appendix contains any additional mathematical foundations for the hardware implementations.
+Section \ref{sec:overview} provides an overview of the BNN architecture. Section \ref{sec:implementation} details the software and hardware implementation strategies used for the BNN, including training methodologies and tooling for device synthesis. Section \ref{sec:results} presents the results, including simulation setups, demonstration outputs, and optimization explorations. Moreover, Section \ref{sec:discussion} discusses the design choices and observed variabilities, and Section \ref{sec:conclusions} concludes with the success of the project and potential areas for future work, as expanded in Section \ref{sec:future}. The appendix contains any additional mathematical foundations for the hardware implementations.
 
 
 \section{Overview of BNN Architecture}
@@ -216,7 +218,7 @@ Additionally, text files for input vectors and corresponding labels were generat
 
 \subsection{Demonstration}
 This section provides a detailed demonstration of the simulation results. 
-\autoref{fig:waveform} presents a waveform analysis demonstrating that, after the reset signal is set low, the output vector begins displaying which counters are equal to the higest count. When the done signal is high, the output equals to the expected signal, verifying the proper operation of the designed circuit.
+\autoref{fig:waveform} presents a waveform analysis demonstrating that, after the reset signal is set low, the output vector begins displaying which counters are equal to the highest count. When the done signal is high, the output equals to the expected signal, verifying the proper operation of the designed circuit.
 
 \begin{figure}[h]
     \centering
@@ -250,12 +252,12 @@ This section presents the results achieved in terms of timing, area, power, and 
     \label{tab:optimization_metrics}
     \begin{tabular}{@{}ccccccccc@{}}
         \toprule
-        \textbf{Optimization} & \textbf{Area ($\mu m^2$)} & \textbf{Power (W)} & \textbf{Accuracy (\%)} & \textbf{Inference (ns)}  \\
+        \textbf{Optimization} & \textbf{Area ($\mu m^2$)} & \textbf{Energy (nJ)} & \textbf{Accuracy (\%)} & \textbf{Inference (ns)}  \\
         \midrule
-        Original & 113127 & 1.50E-02 & 95.07 & 2.984 \\
-        Hidden Size & 68377 & 1.11E-02 & 95.65 & 3.296 \\
-        Level & 73059 & 1.16E-02 & 95.65 & 2.842 \\
-        LFSR & 70088 & 1.13E-02 & 95.65 & 2.678 \\
+        Original & 113127 & 45.87 & 95.07 & 3059 \\
+        Hidden Size & 68377 & 22.18 & 95.65 & 2007 \\
+        Level & 73059 & 20.18 & 95.65 & 1739 \\
+        LFSR & 70088 & 18.57 & 95.65 & 1639 \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -446,9 +448,9 @@ Significant variability was observed in the synthesis process using the Genus \c
 \section{Conclusions}
 \label{sec:conclusions}
 
-Our aim of achieving 95\% accuracy was succesful. 
+Our aim of achieving 95\% accuracy was successful. 
 \todo{this XX percent}
-The exploration of various hidden sizes was crucial in enhancing accuracy and optimizing hardware performance. The weight storage was identified as the primary bottleneck, particularly due to register file demands. Our optimizations resulted in a 2x performance increase, a 38\% reduction in design area, and a XX\% decrease in energy per inference.
+The exploration of various hidden sizes was crucial in enhancing accuracy and optimizing hardware performance. The weight storage was identified as the primary bottleneck, particularly due to register file demands. Our optimizations resulted in a 2x performance increase, a 38\% reduction in design area, and a 59.5\% decrease in energy per inference.
 
 
 \section{Future work}
@@ -456,14 +458,10 @@ The exploration of various hidden sizes was crucial in enhancing accuracy and op
 
 Future work includes exploring the integration of alternative SRAM libraries, such as OpenRAM \cite{openram}, to potentially enhance the efficiency of the memory subsystem. Currently everything is implemented within the NandGateOpenCellLibrary \cite{nangate_lib}. The incorporation of a different SRAM solution may offer advantages in terms of power consumption, area utilization, and access times.
 
-Additionally, there is potential to experiment with using 729 as the input size for the XNOR popcount CSA network, dropping even more weights then the optimization of Section \ref{ref:why_768}. This specific input size is optimal for Wallace tree structures, which could improved tree load balancing and computational efficiency \cite{wallace} . Adapting the input size to align with the characteristics of a Wallace tree might enhance the overall performance and timing of the CSA network.
-
-\newpage
+Additionally, there is potential to experiment with using 729 as the input size for the XNOR popcount CSA network, dropping even more weights than the optimization of Section \ref{ref:why_768}. This specific input size is optimal for Wallace tree structures, which could improve tree load balancing and computational efficiency \cite{wallace}. Adapting the input size to align with the characteristics of a Wallace tree might enhance the overall performance and timing of the CSA network.
 
 \printbibliography
 
-\newpage
-\clearpage
 
 \appendix
 \label{appendix}
@@ -582,5 +580,6 @@ The mathematical approach for the second matrix multiplication mirrors the first
 
 
 \end{document}
+
 
 
